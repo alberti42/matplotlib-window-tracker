@@ -340,22 +340,28 @@ def show(
             reason="nonblocking refresh",
         )
 
-    # Fallback: standard behavior.
-    # Note: if backend is non-GUI/headless, this will not create a window.
+    # Fallback: if we're on a non-GUI backend, there is nothing to show.
+    # Avoid calling `plt.show()` here, since it commonly emits warnings (e.g.
+    # FigureCanvasAgg) and cannot open native windows anyway.
+    if not gui:
+        return ShowStatus(
+            backend=backend,
+            nonblocking_requested=nonblocking,
+            nonblocking_used=False,
+            reason="non-GUI backend; nothing to show",
+        )
+
+    # Fallback: standard Matplotlib behavior.
     try:
         plt.show()
     except Exception:
         pass
 
-    reason = "fallback to plt.show()"
-    if nonblocking and not gui:
-        reason += "; non-GUI backend"
-
     return ShowStatus(
         backend=backend,
         nonblocking_requested=nonblocking,
         nonblocking_used=False,
-        reason=reason,
+        reason="fallback to plt.show()",
     )
 
 

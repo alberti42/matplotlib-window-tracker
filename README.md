@@ -56,6 +56,20 @@ Matplotlib cannot open native windows. Use `fig.savefig(...)`.
 mpl-nonblock-diagnose
 ```
 
+## Two-window Demo (sin/cos)
+
+Installed entrypoint:
+
+```bash
+mpl-nonblock-two-windows
+```
+
+Or from source:
+
+```bash
+python examples/two_windows.py
+```
+
 ## Notes
 
 - Window position persistence is a property of reusing the same native window
