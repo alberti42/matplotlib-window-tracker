@@ -2,9 +2,30 @@ from __future__ import annotations
 
 import os
 import sys
+import warnings
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+
+_WARNED_ONCE: set[str] = set()
+
+
+def _warn_once(key: str, message: str, exc: BaseException | None = None) -> None:
+    """Emit a warning at most once per process for `key`.
+
+    This library runs in a wide range of Matplotlib backends and interactive shells.
+    Some backend-dependent operations can fail intermittently or be unsupported; we
+    intentionally treat those failures as non-fatal, but we still want them to be
+    visible during development/debugging.
+    """
+
+    if key in _WARNED_ONCE:
+        return
+    _WARNED_ONCE.add(key)
+
+    detail = f" ({exc.__class__.__name__}: {exc})" if exc is not None else ""
+    warnings.warn(f"{message}{detail}", RuntimeWarning, stacklevel=3)
 
 
 def _in_ipython() -> bool:
@@ -12,7 +33,15 @@ def _in_ipython() -> bool:
         from IPython import get_ipython  # type: ignore[import-not-found]
 
         return get_ipython() is not None
-    except Exception:
+    except ModuleNotFoundError:
+        return False
+    except Exception as e:
+        # Best-effort: IPython may be partially installed/misconfigured.
+        _warn_once(
+            "in_ipython",
+            "mpl_nonblock: error while checking for IPython; assuming not in IPython",
+            e,
+        )
         return False
 
 
@@ -26,7 +55,13 @@ def _ipython_simple_prompt() -> bool:
         if ip is None:
             return False
         return bool(getattr(ip, "simple_prompt", False))
-    except Exception:
+    except Exception as e:
+        # Best-effort: attribute/layout can differ across IPython versions.
+        _warn_once(
+            "ipython_simple_prompt",
+            "mpl_nonblock: error while checking IPython simple_prompt; assuming False",
+            e,
+        )
         return False
 
 
@@ -51,7 +86,14 @@ def _backend_str() -> str:
         import matplotlib
 
         return str(matplotlib.get_backend())
-    except Exception:
+    except ModuleNotFoundError:
+        return "unknown"
+    except Exception as e:
+        _warn_once(
+            "backend_str",
+            "mpl_nonblock: matplotlib.get_backend() failed; treating backend as unknown",
+            e,
+        )
         return "unknown"
 
 
@@ -172,13 +214,25 @@ def ensure_backend(
                 if ip is not None:
                     ip.run_line_magic("matplotlib", want)
                     return str(matplotlib.get_backend()).lower().find(want) != -1
-            except Exception:
-                pass
+            except Exception as e:
+                # Best-effort: IPython integration varies by environment/kernel.
+                _warn_once(
+                    "ensure_backend:ipython_magic",
+                    f"mpl_nonblock.ensure_backend: failed to run %matplotlib {want}; falling back",
+                    e,
+                )
 
         try:
             matplotlib.use(name, force=True)
             return True
-        except Exception:
+        except Exception as e:
+            # Best-effort: backend switching can fail if GUI deps are missing or
+            # in headless sessions.
+            _warn_once(
+                f"ensure_backend:matplotlib_use:{want}",
+                f"mpl_nonblock.ensure_backend: matplotlib.use({name!r}) failed; continuing",
+                e,
+            )
             return False
 
     if _try_set(preferred):
@@ -244,13 +298,23 @@ def subplots(
         if clear:
             try:
                 fig.clf()
-            except Exception:
-                pass
+            except Exception as e:
+                # Best-effort: some backends/figure managers can reject clearing.
+                _warn_once(
+                    "subplots:fig_clf",
+                    "mpl_nonblock.subplots: fig.clf() failed; continuing",
+                    e,
+                )
         if constrained_layout is not None:
             try:
-                fig.set_constrained_layout(bool(constrained_layout))
-            except Exception:
-                pass
+                fig.set_constrained_layout(bool(constrained_layout))  # type: ignore[attr-defined]
+            except Exception as e:
+                # Best-effort: constrained_layout support depends on Matplotlib.
+                _warn_once(
+                    "subplots:constrained_layout",
+                    "mpl_nonblock.subplots: fig.set_constrained_layout() failed; continuing",
+                    e,
+                )
         ax = fig.subplots(nrows, ncols, **kwargs)
         return fig, ax
 
@@ -286,52 +350,88 @@ def show(
         if is_interactive():
             try:
                 plt.ion()
-            except Exception:
-                pass
+            except Exception as e:
+                # Best-effort: interactive mode may be unsupported by the backend.
+                _warn_once(
+                    "show:plt_ion",
+                    "mpl_nonblock.show: plt.ion() failed; continuing",
+                    e,
+                )
 
         # Best-effort: show/draw/flush.
         try:
             show_m = getattr(fig, "show", None)
             if callable(show_m):
                 show_m()
-        except Exception:
-            pass
+        except Exception as e:
+            # Best-effort: backend-specific figure methods may raise.
+            _warn_once(
+                "show:fig_show",
+                "mpl_nonblock.show: fig.show() failed; continuing",
+                e,
+            )
 
         try:
             mgr = fig.canvas.manager  # type: ignore[attr-defined]
             show_mgr = getattr(mgr, "show", None)
             if callable(show_mgr):
                 show_mgr()
-        except Exception:
-            pass
+        except Exception as e:
+            # Best-effort: manager/window plumbing is backend-dependent.
+            _warn_once(
+                "show:manager_show",
+                "mpl_nonblock.show: manager.show() failed; continuing",
+                e,
+            )
 
         try:
             fig.canvas.draw_idle()  # type: ignore[attr-defined]
-        except Exception:
-            pass
+        except Exception as e:
+            _warn_once(
+                "show:draw_idle",
+                "mpl_nonblock.show: canvas.draw_idle() failed; continuing",
+                e,
+            )
 
         try:
             fig.canvas.flush_events()  # type: ignore[attr-defined]
-        except Exception:
-            pass
+        except Exception as e:
+            _warn_once(
+                "show:flush_events",
+                "mpl_nonblock.show: canvas.flush_events() failed; continuing",
+                e,
+            )
 
         try:
             plt.show(block=False)
-        except Exception:
-            pass
+        except Exception as e:
+            _warn_once(
+                "show:plt_show_block_false",
+                "mpl_nonblock.show: plt.show(block=False) failed; continuing",
+                e,
+            )
 
         try:
             plt.pause(pause)
-        except Exception:
-            pass
+        except Exception as e:
+            _warn_once(
+                "show:plt_pause",
+                "mpl_nonblock.show: plt.pause() failed; continuing",
+                e,
+            )
 
         if raise_window:
             try:
                 from .backends import raise_figure
 
                 raise_figure(fig)
-            except Exception:
-                pass
+            except Exception as e:
+                # Best-effort: window raising is highly backend- and OS-specific.
+                _warn_once(
+                    "show:raise_window",
+                    "mpl_nonblock.show: raise_window failed; continuing",
+                    e,
+                )
 
         return ShowStatus(
             backend=backend,
@@ -354,8 +454,12 @@ def show(
     # Fallback: standard Matplotlib behavior.
     try:
         plt.show()
-    except Exception:
-        pass
+    except Exception as e:
+        _warn_once(
+            "show:plt_show",
+            "mpl_nonblock.show: plt.show() failed; continuing",
+            e,
+        )
 
     return ShowStatus(
         backend=backend,
