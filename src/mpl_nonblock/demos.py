@@ -2,19 +2,9 @@ from __future__ import annotations
 
 import math
 from datetime import datetime
+from typing import Any
 
 from .core import ensure_backend, is_interactive, show, subplots
-
-
-def _first_ax(ax):
-    try:
-        import numpy as np
-
-        if isinstance(ax, np.ndarray):
-            return ax.flat[0]
-    except Exception:
-        pass
-    return ax
 
 
 def two_windows_main() -> None:
@@ -35,6 +25,15 @@ def two_windows_main() -> None:
     y_sin = [math.sin(2.0 * math.pi * xi) for xi in x]
     y_cos = [math.cos(2.0 * math.pi * xi) for xi in x]
 
+    def _require_axes(ax: Any, *, name: str) -> Any:
+        # In this demo we expect a single Axes (nrows=ncols=1). Fail fast if the
+        # Matplotlib return shape changes.
+        if hasattr(ax, "plot") and hasattr(ax, "set_title"):
+            return ax
+        raise TypeError(
+            f"Expected a single Matplotlib Axes for {name}, got {type(ax)!r}"
+        )
+
     fig1, ax1 = subplots(
         "sin(2pi x)",
         clear=True,
@@ -43,7 +42,7 @@ def two_windows_main() -> None:
         figsize=(8, 4),
         constrained_layout=True,
     )
-    ax1 = _first_ax(ax1)
+    ax1 = _require_axes(ax1, name="ax1")
     ax1.plot(x, y_sin)
     ax1.set_title(f"sin(2pi x)  [{stamp}]")
     ax1.grid(True, alpha=0.3)
@@ -56,7 +55,7 @@ def two_windows_main() -> None:
         figsize=(8, 4),
         constrained_layout=True,
     )
-    ax2 = _first_ax(ax2)
+    ax2 = _require_axes(ax2, name="ax2")
     ax2.plot(x, y_cos, color="tab:orange")
     ax2.set_title(f"cos(2pi x)  [{stamp}]")
     ax2.grid(True, alpha=0.3)
