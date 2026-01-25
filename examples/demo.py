@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 import math
+from datetime import datetime
 
 from mpl_nonblock import ensure_backend, show, subplots
 
@@ -19,9 +20,10 @@ def main() -> None:
     n = 200
     t = [i / (n - 1) for i in range(n)]
     for k in range(30):
+        stamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
         ax1.cla()
         ax1.plot(t, [math.sin(2.0 * math.pi * (k + 1) * ti) for ti in t])
-        ax1.set_title(f"A: k={k}")
+        ax1.set_title(f"A: k={k}  [{stamp}]")
         ax1.grid(True, alpha=0.3)
 
         ax2.cla()
@@ -30,7 +32,7 @@ def main() -> None:
             [math.cos(2.0 * math.pi * (k + 1) * ti) for ti in t],
             color="tab:orange",
         )
-        ax2.set_title(f"B: k={k}")
+        ax2.set_title(f"B: k={k}  [{stamp}]")
         ax2.grid(True, alpha=0.3)
 
         show(fig1, nonblocking=True)

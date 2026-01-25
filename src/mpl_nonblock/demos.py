@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from datetime import datetime
 
 from .core import ensure_backend, is_interactive, show, subplots
 
@@ -27,6 +28,8 @@ def two_windows_main() -> None:
     # Best-effort backend selection (must happen before pyplot import).
     ensure_backend()
 
+    stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+
     n = 400
     x = [i / (n - 1) for i in range(n)]
     y_sin = [math.sin(2.0 * math.pi * xi) for xi in x]
@@ -42,7 +45,7 @@ def two_windows_main() -> None:
     )
     ax1 = _first_ax(ax1)
     ax1.plot(x, y_sin)
-    ax1.set_title("sin(2pi x)")
+    ax1.set_title(f"sin(2pi x)  [{stamp}]")
     ax1.grid(True, alpha=0.3)
 
     fig2, ax2 = subplots(
@@ -55,7 +58,7 @@ def two_windows_main() -> None:
     )
     ax2 = _first_ax(ax2)
     ax2.plot(x, y_cos, color="tab:orange")
-    ax2.set_title("cos(2pi x)")
+    ax2.set_title(f"cos(2pi x)  [{stamp}]")
     ax2.grid(True, alpha=0.3)
 
     if is_interactive():
