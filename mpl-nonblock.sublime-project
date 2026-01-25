@@ -1,0 +1,52 @@
+{
+  "folders": [
+    {
+      "path": ".",
+      "folder_exclude_patterns": [
+        "__pycache__",
+        ".pytest_cache",
+        ".mypy_cache",
+        ".ruff_cache",
+        ".venv",
+        "venv",
+        "build",
+        "dist"
+      ],
+      "file_exclude_patterns": [
+        "*.pyc"
+      ]
+    }
+  ],
+  "settings": {
+    "tab_size": 4,
+    "translate_tabs_to_spaces": true,
+    "LSP": {
+      "LSP-basedpyright": {
+        "settings": {
+          "venv": "py313",
+          "venvStrategies": [
+            "pyenv",
+            // "st_project_data",
+            // "local_dot_venv",
+            // "env_var_conda_prefix",
+            // "env_var_virtual_env",
+            // "rye",
+            // "poetry",
+            // "pdm",
+            // "hatch",
+            // "pipenv",
+            // "any_subdirectory",
+          ],
+          "basedpyright.analysis.typeCheckingMode": "basic",
+          "basedpyright.analysis.reportOptionalSubscript": "error"
+        }
+      }
+    },
+  },
+  "build_systems": [
+    {
+    }
+  ]
+}
+
+// vim: set expandtab tabstop=2 shiftwidth=2 softtabstop=2 :
