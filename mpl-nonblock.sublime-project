@@ -23,20 +23,7 @@
     "LSP": {
       "LSP-basedpyright": {
         "settings": {
-          "venv": "py313",
-          "venvStrategies": [
-            "pyenv",
-            // "st_project_data",
-            // "local_dot_venv",
-            // "env_var_conda_prefix",
-            // "env_var_virtual_env",
-            // "rye",
-            // "poetry",
-            // "pdm",
-            // "hatch",
-            // "pipenv",
-            // "any_subdirectory",
-          ],
+          "python.pythonPath": "~/.pyenv/versions/py313/bin/python",
           "basedpyright.analysis.typeCheckingMode": "basic",
           "basedpyright.analysis.reportOptionalSubscript": "error"
         }
