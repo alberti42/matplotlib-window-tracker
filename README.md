@@ -98,6 +98,10 @@ Import name is `mpl_nonblock`:
   - If a GUI backend is present but nonblocking cannot be used, it falls back to
     plain `plt.show()` (standard Matplotlib behavior).
 
+- `is_interactive()`
+  - Returns `True` when running inside IPython/Jupyter or a REPL-ish session
+    (checks for IPython, `sys.ps1`, and `sys.flags.interactive`).
+
 - `diagnostics()`
   - Returns a small dict (backend, interactive detection, headless hints).
 
