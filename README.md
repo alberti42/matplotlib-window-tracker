@@ -3,6 +3,8 @@
 `mpl-nonblock` is a small, dependency-light helper library that makes Matplotlib
 behave nicely in interactive IPython workflows.
 
+[TODO] We need to explain that it is designed as a drop-in replacement for matplotlib to allow programming in ipython instead of jupyter notebook. This workflow is so much more useful these days that we can rely on agents for programming. Agents are less capable of modifying a jupyter notebook. Besides, jupyter notebooks should be avoided for complex projects.
+
 It focuses on two practical problems:
 
 - tagged figure windows: re-use the same OS window across repeated runs (stable position)
@@ -45,10 +47,17 @@ pip install "mpl-nonblock[qt]"
 
 This installs the optional Qt dependency (`PySide6`).
 
+[TODO] We need to update the instructions to use
+```
+uv pip install "mpl-nonblock @ git+https://github.com/alberti42/mpl-nonblock.git@v1.0.0"
+```
+
 ## Quickstart
 
 The key rule: if you want `ensure_backend()` to be able to switch backends,
 call it before importing `matplotlib.pyplot`.
+
+[TODO] Fix the example; we need to create two figures; it makes it clearer how the nonblock behavior works.
 
 ```python
 from mpl_nonblock import ensure_backend, subplots, show
