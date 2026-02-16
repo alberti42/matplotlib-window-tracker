@@ -25,10 +25,20 @@ def is_interactive() -> bool:
 
     if _in_ipython():
         return True
+
+    # Check the prompt string typically defined
+    # only in interactive sessions (e.g. '>>>').
     if getattr(sys, "ps1", None) is not None:
         return True
+
+    # Check if python was called with `-i` flag
+    # This catches the case:
+    # python3 -i -c "import sys; print(getattr(sys,'ps1',None),sys.flags.interactive)"
+    # which produces `None 1`. The code is executed without prompt `ps1`, which is only
+    # set once python enters the interactive mode with a prompt (typically `>>>`)
     if getattr(sys.flags, "interactive", 0):
         return True
+
     return False
 
 
