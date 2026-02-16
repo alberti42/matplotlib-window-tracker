@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from ._helpers import _WARNED_ONCE, _in_ipython, _ipython_simple_prompt, _warn_once
+from ._helpers import _WARNED_ONCE, _in_ipython, _warn_once
 
 __all__ = [
     "BackendStatus",
@@ -191,15 +191,12 @@ def ensure_backend(
             return False
 
     if _try_set(preferred):
-        reason = "selected preferred backend"
-        if preferred.lower() == "macosx" and _ipython_simple_prompt():
-            reason += "; WARNING: IPython simple_prompt may prevent macOS event loop integration"
         return BackendStatus(
             backend=str(matplotlib.get_backend()),
             selected=True,
             can_switch=True,
             tried=tuple(tried),
-            reason=reason,
+            reason="selected preferred backend",
         )
 
     for fb in fallbacks:
@@ -380,7 +377,6 @@ def diagnostics() -> dict[str, Any]:
     out["cwd"] = str(Path.cwd())
     out["interactive"] = is_interactive()
     out["ipython"] = _in_ipython()
-    out["ipython_simple_prompt"] = _ipython_simple_prompt()
     out["backend"] = _backend_str()
     out["pyplot_imported"] = _pyplot_imported()
     out["mplbackend_env"] = bool(os.environ.get("MPLBACKEND"))

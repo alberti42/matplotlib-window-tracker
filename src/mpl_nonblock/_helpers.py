@@ -7,7 +7,6 @@ __all__ = [
     "_IN_IPYTHON",
     "_WARNED_ONCE",
     "_in_ipython",
-    "_ipython_simple_prompt",
     "_warn_once",
 ]
 
@@ -41,17 +40,3 @@ def _in_ipython() -> bool:
     except NameError:
         _IN_IPYTHON = False
     return _IN_IPYTHON
-
-
-def _ipython_simple_prompt() -> bool:
-    if not _in_ipython():
-        return False
-    try:
-        from IPython import get_ipython  # type: ignore[import-not-found]
-    except ModuleNotFoundError:
-        return False
-
-    ip = get_ipython()
-    if ip is None:
-        return False
-    return bool(getattr(ip, "simple_prompt", False))

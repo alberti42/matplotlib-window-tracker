@@ -174,15 +174,7 @@ python -m pytest
    - `%matplotlib macosx` (macOS)
    - `%matplotlib qt` / `%matplotlib tk` (Linux)
 
-2) macOS + IPython: avoid `--simple-prompt`.
-If you see messages about not being able to install the "osx" event loop hook,
-start IPython with:
-
-```bash
-ipython --TerminalInteractiveShell.simple_prompt=False
-```
-
-3) If you are headless (no GUI): there is no window to show.
+2) If you are headless (no GUI): there is no window to show.
 Use `fig.savefig(...)`.
 
 ### Diagnose
