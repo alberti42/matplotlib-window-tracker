@@ -4,7 +4,7 @@ import math
 from datetime import datetime
 from typing import Any
 
-from .core import ensure_backend, is_interactive, show, subplots
+from .core import ensure_backend, is_interactive, refresh, subplots
 
 
 def two_windows_main() -> None:
@@ -61,8 +61,8 @@ def two_windows_main() -> None:
     ax2.grid(True, alpha=0.3)
 
     if is_interactive():
-        show(fig1, nonblocking=True)
-        show(fig2, nonblocking=True)
+        refresh(fig1)
+        refresh(fig2)
         return
 
     import matplotlib.pyplot as plt

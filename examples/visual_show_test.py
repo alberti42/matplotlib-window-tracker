@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import math
+import sys
+import threading
 import time
 from typing import Any, Callable
 
@@ -68,16 +70,17 @@ def _variant_fn(name: str) -> Callable[[Any, float], None]:
     if name == "mpl_nonblock.show":
         from mpl_nonblock import show
 
-        return lambda fig, pause: show(
-            fig, nonblocking=True, raise_window=False, pause=pause
-        )
+        return lambda fig, pause: show(block=False, pause=pause)
 
     if name == "mpl_nonblock.show+raise":
-        from mpl_nonblock import show
+        from mpl_nonblock import refresh
 
-        return lambda fig, pause: show(
-            fig, nonblocking=True, raise_window=True, pause=pause
-        )
+        return lambda fig, pause: refresh(fig, raise_window=True, pause=pause)
+
+    if name == "mpl_nonblock.refresh":
+        from mpl_nonblock import refresh
+
+        return lambda fig, pause: refresh(fig, raise_window=False, pause=pause)
 
     raise SystemExit(f"Unknown variant: {name!r}")
 
@@ -106,7 +109,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     p.add_argument(
         "--variant",
-        default="mpl_nonblock.show",
+        default="mpl_nonblock.refresh",
         choices=(
             "noop",
             "fig.show",
@@ -115,6 +118,7 @@ def main(argv: list[str] | None = None) -> int:
             "canvas.flush_events",
             "plt.show(block=False)",
             "plt.pause",
+            "mpl_nonblock.refresh",
             "mpl_nonblock.show",
             "mpl_nonblock.show+raise",
         ),
@@ -135,6 +139,7 @@ def main(argv: list[str] | None = None) -> int:
     args = p.parse_args(argv)
 
     import matplotlib
+    import matplotlib.pyplot as plt
 
     backend = str(matplotlib.get_backend())
     print(f"backend: {backend}")
@@ -150,9 +155,21 @@ def main(argv: list[str] | None = None) -> int:
 
     fig, line, x = _new_figure(tag=f"mpl-nonblock: {title}")
 
+    closed = threading.Event()
+    try:
+        fig.canvas.mpl_connect("close_event", lambda evt: closed.set())  # type: ignore[attr-defined]
+    except Exception:
+        pass
+
     pause = 1.0 / max(args.fps, 1.0)
     t0 = time.time()
     for i in range(max(args.frames, 1)):
+        try:
+            if not plt.fignum_exists(fig.number):
+                closed.set()
+                break
+        except Exception:
+            pass
         phase = 0.12 * i
         _set_line(line, x, phase)
         try:
@@ -161,11 +178,44 @@ def main(argv: list[str] | None = None) -> int:
             print(f"refresh error on frame {i}: {e.__class__.__name__}: {e}")
             raise
 
+        if closed.is_set():
+            break
+
     dt = time.time() - t0
     print(f"done: {args.frames} frames in {dt:.2f}s")
 
     if args.hold:
-        input("Press Enter to exit...")
+        # Keep the GUI responsive while waiting.
+        entered = threading.Event()
+
+        def _wait_for_enter() -> None:
+            try:
+                sys.stdin.readline()
+            except Exception:
+                return
+            entered.set()
+
+        t = threading.Thread(target=_wait_for_enter, daemon=True)
+        t.start()
+
+        print("Press Enter to exit (or close the window)...", flush=True)
+        while not entered.is_set() and not closed.is_set():
+            try:
+                if not plt.fignum_exists(fig.number):
+                    break
+            except Exception:
+                break
+            # Keep processing GUI events without repeatedly calling plt.show().
+            # Note: plt.pause() itself may call show() internally; on some backends
+            # that can cause focus-stealing / always-on-top behavior.
+            try:
+                start_loop = getattr(fig.canvas, "start_event_loop", None)  # type: ignore[attr-defined]
+                if callable(start_loop):
+                    start_loop(0.05)
+                else:
+                    plt.pause(0.05)
+            except Exception:
+                plt.pause(0.05)
 
     return 0
 

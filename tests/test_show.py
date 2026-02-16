@@ -70,7 +70,7 @@ def test_show_non_gui_backend_does_not_call_plt_show(monkeypatch: Any) -> None:
     monkeypatch.setattr(plt, "show", fake_show)
     monkeypatch.setattr(core, "_backend_str", lambda: "Agg")
 
-    st = core.show(object(), nonblocking=True)
+    st = core.refresh(object())
     assert st.nonblocking_requested is True
     assert st.nonblocking_used is False
     assert st.reason == "non-GUI backend; nothing to show"
@@ -88,31 +88,18 @@ def test_show_gui_backend_nonblocking_calls_expected_blocks(monkeypatch: Any) ->
     fig = _DummyFig(rec)
 
     monkeypatch.setattr(core, "_backend_str", lambda: "TkAgg")
-    monkeypatch.setattr(core, "is_interactive", lambda: True)
-
-    monkeypatch.setattr(plt, "ion", lambda: rec.add("plt.ion"))
-
-    def fake_show(*args: Any, **kwargs: Any) -> None:
-        rec.add("plt.show", dict(kwargs))
 
     def fake_pause(dt: float) -> None:
         rec.add("plt.pause", dt)
 
-    monkeypatch.setattr(plt, "show", fake_show)
     monkeypatch.setattr(plt, "pause", fake_pause)
 
-    st = core.show(fig, nonblocking=True, pause=0.123)
+    st = core.refresh(fig, pause=0.123)
     assert st.nonblocking_requested is True
     assert st.nonblocking_used is True
     assert st.reason == "nonblocking refresh"
 
     assert rec.events == [
-        ("plt.ion", None),
-        ("fig.show", None),
-        ("manager.show", None),
-        ("canvas.draw_idle", None),
-        ("canvas.flush_events", None),
-        ("plt.show", {"block": False}),
         ("plt.pause", 0.123),
     ]
 
@@ -130,13 +117,11 @@ def test_show_gui_backend_nonblocking_raise_window_calls_raise_figure(
     fig = _DummyFig(rec)
 
     monkeypatch.setattr(core, "_backend_str", lambda: "QtAgg")
-    monkeypatch.setattr(core, "is_interactive", lambda: False)
-    monkeypatch.setattr(plt, "show", lambda *a, **k: rec.add("plt.show", dict(k)))
     monkeypatch.setattr(plt, "pause", lambda dt: rec.add("plt.pause", dt))
 
     monkeypatch.setattr(backends, "raise_figure", lambda f: rec.add("raise_figure", f))
 
-    st = core.show(fig, nonblocking=True, raise_window=True)
+    st = core.refresh(fig, raise_window=True)
     assert st.nonblocking_used is True
     assert ("raise_figure", fig) in rec.events
 
@@ -159,10 +144,10 @@ def test_show_gui_backend_blocking_falls_back_to_plain_plt_show(
 
     monkeypatch.setattr(plt, "show", fake_show)
 
-    st = core.show(object(), nonblocking=False)
+    st = core.show(block=True)
     assert st.nonblocking_requested is False
     assert st.nonblocking_used is False
-    assert st.reason == "fallback to plt.show()"
+    assert st.reason == "blocking plt.show()"
     assert called == [((), {})]
 
 
@@ -175,34 +160,23 @@ def test_show_nonblocking_failures_warn_once_and_continue(
     from mpl_nonblock import core
 
     monkeypatch.setattr(core, "_backend_str", lambda: "TkAgg")
-    monkeypatch.setattr(core, "is_interactive", lambda: True)
     core._WARNED_ONCE.clear()
 
-    rec = _Recorder()
+    def boom(dt: float) -> None:
+        raise RuntimeError("boom")
 
-    class Fig:
-        def __init__(self) -> None:
-            self.canvas = _DummyCanvas(rec)
+    monkeypatch.setattr(plt, "pause", boom)
 
-        def show(self) -> None:
-            raise RuntimeError("boom")
-
-    fig = Fig()
-
-    monkeypatch.setattr(plt, "ion", lambda: None)
-    monkeypatch.setattr(plt, "show", lambda *a, **k: None)
-    monkeypatch.setattr(plt, "pause", lambda dt: None)
-
-    st1 = core.show(fig, nonblocking=True)
-    st2 = core.show(fig, nonblocking=True)
+    st1 = core.show(block=False)
+    st2 = core.show(block=False)
     assert st1.nonblocking_used is True
     assert st2.nonblocking_used is True
 
     msgs = [str(w.message) for w in recwarn.list]
-    assert any("mpl_nonblock.show: fig.show() failed; continuing" in m for m in msgs)
+    assert any("mpl_nonblock.show: plt.pause() failed; continuing" in m for m in msgs)
     # warn-once behavior: second call should not add a second warning with same key.
     assert (
-        sum("mpl_nonblock.show: fig.show() failed; continuing" in m for m in msgs) == 1
+        sum("mpl_nonblock.show: plt.pause() failed; continuing" in m for m in msgs) == 1
     )
 
 
@@ -215,7 +189,6 @@ def test_show_nonblocking_each_block_failure_is_nonfatal_and_reports_key(
     from mpl_nonblock import backends, core
 
     monkeypatch.setattr(core, "_backend_str", lambda: "TkAgg")
-    monkeypatch.setattr(core, "is_interactive", lambda: True)
     core._WARNED_ONCE.clear()
 
     rec = _Recorder()
@@ -231,8 +204,6 @@ def test_show_nonblocking_each_block_failure_is_nonfatal_and_reports_key(
     monkeypatch.setattr(core, "_warn_once", fake_warn_once)
 
     # Baseline: no-op pyplot calls.
-    monkeypatch.setattr(plt, "ion", lambda: None)
-    monkeypatch.setattr(plt, "show", lambda *a, **k: None)
     monkeypatch.setattr(plt, "pause", lambda dt: None)
 
     def reset_dummy_methods() -> None:
@@ -247,50 +218,24 @@ def test_show_nonblocking_each_block_failure_is_nonfatal_and_reports_key(
     def run(fail_key: str) -> None:
         reported.clear()
         # Reset monkeypatched call-sites between subcases.
-        monkeypatch.setattr(plt, "ion", lambda: None)
-        monkeypatch.setattr(plt, "show", lambda *a, **k: None)
         monkeypatch.setattr(plt, "pause", lambda dt: None)
         monkeypatch.setattr(backends, "raise_figure", lambda f: None)
         reset_dummy_methods()
 
-        if fail_key == "show:plt_ion":
-            monkeypatch.setattr(plt, "ion", boom)
-            core.show(fig, nonblocking=True)
-        elif fail_key == "show:fig_show":
-            fig.show = boom  # type: ignore[method-assign]
-            core.show(fig, nonblocking=True)
-        elif fail_key == "show:manager_show":
-            fig.canvas.manager.show = boom  # type: ignore[method-assign]
-            core.show(fig, nonblocking=True)
-        elif fail_key == "show:draw_idle":
-            fig.canvas.draw_idle = boom  # type: ignore[method-assign]
-            core.show(fig, nonblocking=True)
-        elif fail_key == "show:flush_events":
-            fig.canvas.flush_events = boom  # type: ignore[method-assign]
-            core.show(fig, nonblocking=True)
-        elif fail_key == "show:plt_show_block_false":
-            monkeypatch.setattr(plt, "show", lambda *a, **k: boom())
-            core.show(fig, nonblocking=True)
-        elif fail_key == "show:plt_pause":
+        if fail_key == "refresh:plt_pause":
             monkeypatch.setattr(plt, "pause", lambda dt: boom())
-            core.show(fig, nonblocking=True)
-        elif fail_key == "show:raise_window":
+            core.refresh(fig)
+        elif fail_key == "refresh:raise_window":
             monkeypatch.setattr(backends, "raise_figure", lambda f: boom())
-            core.show(fig, nonblocking=True, raise_window=True)
+            core.refresh(fig, raise_window=True)
         else:
             raise AssertionError(f"unknown fail_key: {fail_key}")
 
         assert reported == [fail_key]
 
     for key in (
-        "show:plt_ion",
-        "show:fig_show",
-        "show:manager_show",
-        "show:draw_idle",
-        "show:flush_events",
-        "show:plt_show_block_false",
-        "show:plt_pause",
-        "show:raise_window",
+        "refresh:plt_pause",
+        "refresh:raise_window",
     ):
         run(key)
 
@@ -314,6 +259,28 @@ def test_show_blocking_plt_show_failure_is_nonfatal_and_reports_key(
         plt, "show", lambda *a, **k: (_ for _ in ()).throw(RuntimeError("boom"))
     )
 
-    st = core.show(object(), nonblocking=False)
+    st = core.show(block=True)
     assert st.nonblocking_used is False
     assert reported == ["show:plt_show"]
+
+
+def test_show_no_args_nonblocking_uses_pause(monkeypatch: Any) -> None:
+    _force_agg_backend()
+
+    import matplotlib.pyplot as plt
+    from mpl_nonblock import core
+
+    core._WARNED_ONCE.clear()
+    monkeypatch.setattr(core, "_backend_str", lambda: "TkAgg")
+
+    called: list[float] = []
+
+    def fake_pause(dt: float) -> None:
+        called.append(dt)
+
+    monkeypatch.setattr(plt, "pause", fake_pause)
+
+    st = core.show()
+    assert st.nonblocking_used is True
+    assert st.reason == "nonblocking show"
+    assert called == [0.001]

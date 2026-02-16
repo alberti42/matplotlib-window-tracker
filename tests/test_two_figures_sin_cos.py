@@ -12,7 +12,7 @@ def test_two_figures_sin_cos() -> None:
 
     matplotlib.use("Agg", force=True)
 
-    from mpl_nonblock import show, subplots
+    from mpl_nonblock import refresh, subplots
 
     n = 400
     x = [i / (n - 1) for i in range(n)]
@@ -29,8 +29,8 @@ def test_two_figures_sin_cos() -> None:
     ax2.set_title("cos(2pi x)")
     ax2.grid(True, alpha=0.3)
 
-    st1 = show(fig1, nonblocking=True)
-    st2 = show(fig2, nonblocking=True)
+    st1 = refresh(fig1)
+    st2 = refresh(fig2)
 
     # On Agg this should not attempt to show a GUI window.
     assert st1.nonblocking_requested is True

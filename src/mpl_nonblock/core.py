@@ -326,18 +326,15 @@ class ShowStatus:
     reason: str
 
 
-def show(
+def refresh(
     fig: Any,
     *,
-    nonblocking: bool = True,
-    raise_window: bool = False,
     pause: float = 0.001,
+    raise_window: bool = False,
 ) -> ShowStatus:
-    """Show/refresh a figure.
+    """Nonblocking refresh of a specific figure.
 
-    If `nonblocking=True`, this uses the standard Matplotlib nonblocking recipe.
-    If that cannot work for the current backend/environment, it falls back to a
-    plain `plt.show()` (standard behavior) and returns a status with a reason.
+    This is the "movie frame" primitive: update artists, then call `refresh(fig)`.
     """
 
     import matplotlib.pyplot as plt
@@ -345,126 +342,99 @@ def show(
     backend = _backend_str()
     gui = _is_gui_backend(backend)
 
-    if nonblocking and gui:
-        if is_interactive():
-            try:
-                plt.ion()
-            except Exception as e:
-                # Best-effort: interactive mode may be unsupported by the backend.
-                _warn_once(
-                    "show:plt_ion",
-                    "mpl_nonblock.show: plt.ion() failed; continuing",
-                    e,
-                )
-
-        # Best-effort: show/draw/flush.
-        try:
-            show_m = getattr(fig, "show", None)
-            if callable(show_m):
-                show_m()
-        except Exception as e:
-            # Best-effort: backend-specific figure methods may raise.
-            _warn_once(
-                "show:fig_show",
-                "mpl_nonblock.show: fig.show() failed; continuing",
-                e,
-            )
-
-        try:
-            mgr = fig.canvas.manager  # type: ignore[attr-defined]
-            show_mgr = getattr(mgr, "show", None)
-            if callable(show_mgr):
-                show_mgr()
-        except Exception as e:
-            # Best-effort: manager/window plumbing is backend-dependent.
-            _warn_once(
-                "show:manager_show",
-                "mpl_nonblock.show: manager.show() failed; continuing",
-                e,
-            )
-
-        try:
-            fig.canvas.draw_idle()  # type: ignore[attr-defined]
-        except Exception as e:
-            _warn_once(
-                "show:draw_idle",
-                "mpl_nonblock.show: canvas.draw_idle() failed; continuing",
-                e,
-            )
-
-        try:
-            fig.canvas.flush_events()  # type: ignore[attr-defined]
-        except Exception as e:
-            _warn_once(
-                "show:flush_events",
-                "mpl_nonblock.show: canvas.flush_events() failed; continuing",
-                e,
-            )
-
-        try:
-            plt.show(block=False)
-        except Exception as e:
-            _warn_once(
-                "show:plt_show_block_false",
-                "mpl_nonblock.show: plt.show(block=False) failed; continuing",
-                e,
-            )
-
-        try:
-            plt.pause(pause)
-        except Exception as e:
-            _warn_once(
-                "show:plt_pause",
-                "mpl_nonblock.show: plt.pause() failed; continuing",
-                e,
-            )
-
-        if raise_window:
-            try:
-                from .backends import raise_figure
-
-                raise_figure(fig)
-            except Exception as e:
-                # Best-effort: window raising is highly backend- and OS-specific.
-                _warn_once(
-                    "show:raise_window",
-                    "mpl_nonblock.show: raise_window failed; continuing",
-                    e,
-                )
-
-        return ShowStatus(
-            backend=backend,
-            nonblocking_requested=True,
-            nonblocking_used=True,
-            reason="nonblocking refresh",
-        )
-
-    # Fallback: if we're on a non-GUI backend, there is nothing to show.
-    # Avoid calling `plt.show()` here, since it commonly emits warnings (e.g.
-    # FigureCanvasAgg) and cannot open native windows anyway.
     if not gui:
         return ShowStatus(
             backend=backend,
-            nonblocking_requested=nonblocking,
+            nonblocking_requested=True,
             nonblocking_used=False,
             reason="non-GUI backend; nothing to show",
         )
 
-    # Fallback: standard Matplotlib behavior.
     try:
-        plt.show()
+        plt.pause(pause)
     except Exception as e:
         _warn_once(
-            "show:plt_show",
-            "mpl_nonblock.show: plt.show() failed; continuing",
+            "refresh:plt_pause",
+            "mpl_nonblock.refresh: plt.pause() failed; continuing",
+            e,
+        )
+
+    if raise_window:
+        try:
+            from .backends import raise_figure
+
+            raise_figure(fig)
+        except Exception as e:
+            _warn_once(
+                "refresh:raise_window",
+                "mpl_nonblock.refresh: raise_window failed; continuing",
+                e,
+            )
+
+    return ShowStatus(
+        backend=backend,
+        nonblocking_requested=True,
+        nonblocking_used=True,
+        reason="nonblocking refresh",
+    )
+
+
+def show(*args: Any, block: bool | None = False, pause: float = 0.001) -> ShowStatus:
+    """Drop-in replacement for `matplotlib.pyplot.show()`.
+
+    Defaults to nonblocking behavior (block=False).
+
+    Compatibility: `show(fig)` behaves like `refresh(fig)`.
+    """
+
+    import matplotlib.pyplot as plt
+
+    if len(args) == 1:
+        return refresh(args[0], pause=pause)
+    if len(args) != 0:
+        raise TypeError("show() takes at most 1 positional argument")
+
+    backend = _backend_str()
+    gui = _is_gui_backend(backend)
+
+    if not gui:
+        return ShowStatus(
+            backend=backend,
+            nonblocking_requested=block is not True,
+            nonblocking_used=False,
+            reason="non-GUI backend; nothing to show",
+        )
+
+    if block:
+        try:
+            plt.show()
+        except Exception as e:
+            _warn_once(
+                "show:plt_show",
+                "mpl_nonblock.show: plt.show() failed; continuing",
+                e,
+            )
+        return ShowStatus(
+            backend=backend,
+            nonblocking_requested=False,
+            nonblocking_used=False,
+            reason="blocking plt.show()",
+        )
+
+    try:
+        plt.pause(pause)
+    except Exception as e:
+        _warn_once(
+            "show:plt_pause",
+            "mpl_nonblock.show: plt.pause() failed; continuing",
             e,
         )
 
     return ShowStatus(
         backend=backend,
-        nonblocking_requested=nonblocking,
-        nonblocking_used=False,
-        reason="fallback to plt.show()",
+        nonblocking_requested=True,
+        nonblocking_used=True,
+        reason="nonblocking show",
     )
 
 
