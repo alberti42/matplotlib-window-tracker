@@ -54,6 +54,9 @@ def refresh(
     This is the "movie frame" primitive: update artists, then call `refresh(fig)`
     to pump the GUI event loop (via `plt.pause`). Optionally, try to raise/focus the
     window via backend-specific hooks.
+
+    If you are updating multiple Axes in the same Figure (e.g. subplots), call this
+    once for that Figure.
     """
 
     import matplotlib.pyplot as plt
@@ -106,6 +109,9 @@ def show(*, block: bool | None = False, pause: float = 0.001) -> ShowStatus:
     Note: we intentionally do not call `plt.show(block=False)` here. In practice it
     is not needed for nonblocking refresh, and repeatedly calling `show()` can
     cause focus-stealing behavior on some backends.
+
+    If you are writing a script (not IPython) and you want windows to stay open at
+    the end, use `show(block=True)`.
     """
 
     import matplotlib.pyplot as plt

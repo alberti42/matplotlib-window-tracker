@@ -74,6 +74,54 @@ ax.set_ylabel("some numbers")
 show()  # nonblocking by default
 ```
 
+## How To Use `show()` vs `refresh()`
+
+Think in terms of Figures:
+
+- Multiple subplots (multiple Axes) inside one Figure: call `refresh(fig)` once.
+- Multiple Figures: call `refresh(fig1)`, `refresh(fig2)`, ... for the figures you updated.
+
+Typical recipes:
+
+1) IPython / interactive work (nonblocking updates)
+
+```python
+import matplotlib.pyplot as plt
+from mpl_nonblock import refresh
+
+fig, (ax1, ax2) = plt.subplots(2, 1, num="My Window", clear=True)
+ax1.plot([0, 1], [0, 1])
+ax2.plot([0, 1], [1, 0])
+
+refresh(fig)  # one figure refresh updates both subplots
+```
+
+2) Two figures updated in a loop ("movie")
+
+```python
+import matplotlib.pyplot as plt
+from mpl_nonblock import refresh
+
+fig1, ax1 = plt.subplots(num="A", clear=True)
+fig2, ax2 = plt.subplots(num="B", clear=True)
+
+for k in range(100):
+    ax1.cla(); ax1.plot([0, 1], [0, k])
+    ax2.cla(); ax2.plot([0, 1], [k, 0])
+
+    refresh(fig1)
+    refresh(fig2)
+```
+
+3) Script: keep windows open at the end
+
+```python
+from mpl_nonblock import show
+
+# ... create plots ...
+show(block=True)
+```
+
 ## Recommended IPython Setup
 
 Matplotlib interactivity depends on GUI backends and event loop integration.

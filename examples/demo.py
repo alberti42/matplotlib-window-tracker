@@ -17,10 +17,16 @@ def main() -> None:
     #   matplotlib.use(recommended_backend(), force=True)
 
     fig1, ax1 = plt.subplots(
-        num="Example: A", clear=True, figsize=(8, 4), constrained_layout=True
+        num="Example: A",
+        clear=True,
+        figsize=(8, 4),
+        constrained_layout=True,
     )
     fig2, ax2 = plt.subplots(
-        num="Example: B", clear=True, figsize=(8, 4), constrained_layout=True
+        num="Example: B",
+        clear=True,
+        figsize=(8, 4),
+        constrained_layout=True,
     )
 
     n = 200
@@ -41,6 +47,7 @@ def main() -> None:
         ax2.set_title(f"B: k={k}  [{stamp}]")
         ax2.grid(True, alpha=0.3)
 
+        # Refresh each figure you updated.
         refresh(fig1)
         refresh(fig2)
         time.sleep(0.05)
