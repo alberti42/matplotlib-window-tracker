@@ -235,15 +235,10 @@ def subplots(
     """Drop-in replacement for `matplotlib.pyplot.subplots()` with stable window reuse.
 
     You can specify the figure identity via `num=` (Matplotlib-compatible) or via
-    `tag=` (alias). For backward compatibility with this package's early API,
-    `subplots("my tag", ...)` is interpreted as `num="my tag"`.
+    `tag=` (alias).
     """
 
     import matplotlib.pyplot as plt
-
-    if args and isinstance(args[0], str) and tag is None and num is None:
-        tag = args[0]
-        args = args[1:]
 
     if tag is not None:
         if num is not None and num != tag:

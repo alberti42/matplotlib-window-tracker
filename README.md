@@ -18,6 +18,9 @@ reusable, explicit API.
 
 - Reuse windows by tag: `subplots("My Figure", ...)` always targets the same figure
    (Matplotlib `num=`), so the OS keeps the window where you left it.
+- Matplotlib-compat tip: prefer `num=` in shared code. This package also accepts
+  `tag=` as an alias for `num=`, but `tag=` is not a Matplotlib keyword, so code that
+  uses it will not run unchanged if you later remove `mpl-nonblock`.
 - Drop-in `plt.show()` replacement: `show()` defaults to nonblocking behavior
   (`block=False`) so your prompt stays responsive.
 - Explicit nonblocking refresh primitive: `refresh(fig)` is the "movie frame" helper

@@ -88,7 +88,8 @@ def _mk_fig_ax(*, variant: str, call: str, num: str | None, clear: bool):
         if call == "pos":
             if num is None:
                 return subplots(1, 1, figsize=(7.0, 4.0))
-            return subplots(num, 1, 1, clear=clear, figsize=(7.0, 4.0))
+            # Matplotlib-compatible: figure identity is a keyword (`num=`), not positional.
+            return subplots(1, 1, num=num, clear=clear, figsize=(7.0, 4.0))
 
         if call == "num_kw":
             if num is None:

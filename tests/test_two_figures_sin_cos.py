@@ -19,12 +19,12 @@ def test_two_figures_sin_cos() -> None:
     y_sin = [math.sin(2.0 * math.pi * xi) for xi in x]
     y_cos = [math.cos(2.0 * math.pi * xi) for xi in x]
 
-    fig1, ax1 = subplots("test: sin(2pi x)", clear=True, figsize=(6, 4))
+    fig1, ax1 = subplots(num="test: sin(2pi x)", clear=True, figsize=(6, 4))
     ax1.plot(x, y_sin)
     ax1.set_title("sin(2pi x)")
     ax1.grid(True, alpha=0.3)
 
-    fig2, ax2 = subplots("test: cos(2pi x)", clear=True, figsize=(6, 4))
+    fig2, ax2 = subplots(num="test: cos(2pi x)", clear=True, figsize=(6, 4))
     ax2.plot(x, y_cos)
     ax2.set_title("cos(2pi x)")
     ax2.grid(True, alpha=0.3)

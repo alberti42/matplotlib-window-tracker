@@ -11,16 +11,6 @@ def _force_agg_backend() -> None:
     matplotlib.use("Agg", force=True)
 
 
-def test_subplots_positional_string_is_tag_alias_for_num() -> None:
-    _force_agg_backend()
-
-    from mpl_nonblock import subplots
-
-    fig, ax = subplots("mytag", clear=True)
-    assert fig.get_label() == "mytag"
-    assert hasattr(ax, "plot")
-
-
 def test_subplots_accepts_num_kw() -> None:
     _force_agg_backend()
 

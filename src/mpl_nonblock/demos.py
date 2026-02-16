@@ -37,7 +37,7 @@ def two_windows_main() -> None:
         )
 
     fig1, ax1 = subplots(
-        "sin(2pi x)",
+        num="sin(2pi x)",
         clear=True,
         nrows=1,
         ncols=1,
@@ -50,7 +50,7 @@ def two_windows_main() -> None:
     ax1.grid(True, alpha=0.3)
 
     fig2, ax2 = subplots(
-        "cos(2pi x)",
+        num="cos(2pi x)",
         clear=True,
         nrows=1,
         ncols=1,
