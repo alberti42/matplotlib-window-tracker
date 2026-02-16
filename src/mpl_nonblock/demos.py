@@ -4,7 +4,7 @@ import math
 from datetime import datetime
 from typing import Any
 
-from .core import ensure_backend, is_interactive, refresh
+from .core import is_interactive, refresh
 
 
 def two_windows_main() -> None:
@@ -15,10 +15,15 @@ def two_windows_main() -> None:
     - Linux: %matplotlib qt  (fallback: %matplotlib tk)
     """
 
-    # Best-effort backend selection (must happen before pyplot import).
-    ensure_backend()
-
     import matplotlib.pyplot as plt
+
+    # Backend selection is intentionally explicit. In IPython, use:
+    #   %matplotlib macosx  (macOS)
+    #   %matplotlib tk      (Linux)
+    # In scripts, do this before importing pyplot:
+    #   import matplotlib
+    #   from mpl_nonblock import recommended_backend
+    #   matplotlib.use(recommended_backend(), force=True)
 
     stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 

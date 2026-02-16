@@ -9,23 +9,13 @@ from typing import Any
 from ._helpers import _WARNED_ONCE, _in_ipython, is_interactive, _warn_once
 
 __all__ = [
-    "BackendStatus",
     "ShowStatus",
     "diagnostics",
-    "ensure_backend",
     "is_interactive",
+    "recommended_backend",
     "refresh",
     "show",
 ]
-
-
-def _pyplot_imported() -> bool:
-    """Return True if `matplotlib.pyplot` is already imported.
-
-    Backend switching must happen before importing pyplot.
-    """
-
-    return "matplotlib.pyplot" in sys.modules
 
 
 def _backend_str() -> str:
@@ -81,147 +71,27 @@ def _is_gui_backend(backend: str) -> bool:
     return False
 
 
-@dataclass(frozen=True)
-class BackendStatus:
-    """Return value for `ensure_backend()`.
-
-    This is a small, stable summary of what backend is active and whether we switched.
-    """
-
-    backend: str
-    selected: bool
-    can_switch: bool
-    tried: tuple[str, ...]
-    reason: str
-
-
-def ensure_backend(
-    preferred: str | None = None,
+def recommended_backend(
     *,
-    fallbacks: list[str] | None = None,
-    honor_user: bool = True,
-) -> BackendStatus:
-    """Best-effort selection of a GUI backend.
+    macos: str = "macosx",
+    linux: str = "TkAgg",
+    windows: str = "TkAgg",
+    other: str = "TkAgg",
+) -> str:
+    """Return a backend name recommendation for the current platform.
 
-    This must run before importing `matplotlib.pyplot` if it needs to switch.
-    In IPython, this will try to use `%matplotlib <backend>`.
+    This does not call `matplotlib.use()`. It only returns a string so users can
+    make backend selection explicit and non-magical.
     """
 
-    try:
-        import matplotlib
-    except ModuleNotFoundError:
-        return BackendStatus(
-            backend="unknown",
-            selected=False,
-            can_switch=False,
-            tried=(),
-            reason="matplotlib not installed",
-        )
-
-    current = str(matplotlib.get_backend())
-    can_switch = not _pyplot_imported()
-
-    # If the user already picked something (MPLBACKEND or IPython magic), don't override.
-    if honor_user:
-        if os.environ.get("MPLBACKEND"):
-            return BackendStatus(
-                backend=current,
-                selected=False,
-                can_switch=can_switch,
-                tried=(),
-                reason="honoring MPLBACKEND",
-            )
-        if _is_gui_backend(current):
-            return BackendStatus(
-                backend=current,
-                selected=False,
-                can_switch=can_switch,
-                tried=(),
-                reason="honoring current backend",
-            )
-
-    # Default policy.
-    if preferred is None:
-        if sys.platform == "darwin":
-            preferred = "macosx"
-            fallbacks = fallbacks or ["TkAgg"]
-        else:
-            preferred = "QtAgg"
-            fallbacks = fallbacks or ["TkAgg"]
-    else:
-        fallbacks = fallbacks or []
-
-    tried: list[str] = []
-    if not can_switch:
-        return BackendStatus(
-            backend=current,
-            selected=False,
-            can_switch=False,
-            tried=(),
-            reason="pyplot already imported; cannot switch backend",
-        )
-
-    def _try_set(name: str) -> bool:
-        """Try to activate a backend name; return True on success."""
-
-        tried.append(name)
-        want = name.lower()
-
-        if _in_ipython():
-            try:
-                from IPython import get_ipython  # type: ignore[import-not-found]
-
-                ip = get_ipython()
-                if ip is not None:
-                    ip.run_line_magic("matplotlib", want)
-                    return str(matplotlib.get_backend()).lower().find(want) != -1
-            except Exception as e:
-                # Best-effort: IPython integration varies by environment/kernel.
-                _warn_once(
-                    "ensure_backend:ipython_magic",
-                    f"mpl_nonblock.ensure_backend: failed to run %matplotlib {want}; falling back",
-                    e,
-                )
-
-        try:
-            matplotlib.use(name, force=True)
-            return True
-        except Exception as e:
-            # Best-effort: backend switching can fail if GUI deps are missing or
-            # in headless sessions.
-            _warn_once(
-                f"ensure_backend:matplotlib_use:{want}",
-                f"mpl_nonblock.ensure_backend: matplotlib.use({name!r}) failed; continuing",
-                e,
-            )
-            return False
-
-    if _try_set(preferred):
-        return BackendStatus(
-            backend=str(matplotlib.get_backend()),
-            selected=True,
-            can_switch=True,
-            tried=tuple(tried),
-            reason="selected preferred backend",
-        )
-
-    for fb in fallbacks:
-        if _try_set(fb):
-            return BackendStatus(
-                backend=str(matplotlib.get_backend()),
-                selected=True,
-                can_switch=True,
-                tried=tuple(tried),
-                reason="selected fallback backend",
-            )
-
-    return BackendStatus(
-        backend=str(matplotlib.get_backend()),
-        selected=False,
-        can_switch=True,
-        tried=tuple(tried),
-        reason="could not switch backend; using existing",
-    )
+    plat = sys.platform
+    if plat == "darwin":
+        return macos
+    if plat.startswith("linux"):
+        return linux
+    if plat.startswith("win"):
+        return windows
+    return other
 
 
 @dataclass(frozen=True)
@@ -364,7 +234,6 @@ def diagnostics() -> dict[str, Any]:
     out["interactive"] = is_interactive()
     out["ipython"] = _in_ipython()
     out["backend"] = _backend_str()
-    out["pyplot_imported"] = _pyplot_imported()
     out["mplbackend_env"] = bool(os.environ.get("MPLBACKEND"))
     out["display_env"] = os.environ.get("DISPLAY")
     out["wayland_env"] = os.environ.get("WAYLAND_DISPLAY")

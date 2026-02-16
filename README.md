@@ -22,8 +22,6 @@ reusable, explicit API.
   (`block=False`) so your prompt stays responsive.
 - Explicit nonblocking refresh primitive: `refresh(fig)` is the "movie frame" helper
   (update artists, then call `refresh(fig)` to process GUI events).
-- Best-effort backend selection: `ensure_backend()` tries to pick a GUI backend
-  early (before `matplotlib.pyplot` import), while honoring an explicit user choice.
 - Best-effort window raising (optional): `refresh(fig, raise_window=True)` attempts
   to bring the figure window to the front on supported backends.
 - Diagnostics: `mpl-nonblock-diagnose` prints a small JSON blob that usually makes
@@ -58,16 +56,15 @@ uv pip install "mpl-nonblock @ git+https://github.com/alberti42/mpl-nonblock.git
 
 ## Quickstart
 
-The key rule: if you want `ensure_backend()` to be able to switch backends,
-call it before importing `matplotlib.pyplot`.
+Backend selection must happen before importing `matplotlib.pyplot`.
 
 [TODO] Fix the example; we need to create two figures; it makes it clearer how the nonblock behavior works.
 
 ```python
-from mpl_nonblock import ensure_backend, show
+import matplotlib
+from mpl_nonblock import recommended_backend, show
 
-ensure_backend()
-
+matplotlib.use(recommended_backend(), force=True)  # must be before pyplot
 import matplotlib.pyplot as plt
 
 fig, ax = plt.subplots(num="Baseline", clear=True, figsize=(10, 5))
@@ -92,16 +89,23 @@ Then run scripts normally:
 %run -i your_script.py
 ```
 
+In plain Python scripts, select a backend before importing `matplotlib.pyplot`:
+
+```python
+import matplotlib
+from mpl_nonblock import recommended_backend
+
+matplotlib.use(recommended_backend(), force=True)
+import matplotlib.pyplot as plt
+```
+
 ## API Overview
 
 Import name is `mpl_nonblock`:
 
-- `ensure_backend(preferred=None, fallbacks=None, honor_user=True)`
-  - Best-effort backend selection (must run before `matplotlib.pyplot` is imported).
-  - Defaults:
-    - macOS: prefer `macosx` (no auto-switch to Qt)
-    - Linux: prefer `QtAgg`, fallback `TkAgg`
-  - Honors explicit user choice when possible (e.g. `MPLBACKEND`, `%matplotlib ...`).
+ - `recommended_backend(macos="macosx", linux="TkAgg", windows="TkAgg", other="TkAgg")`
+   - Returns a backend name recommendation for your platform.
+   - Does not call `matplotlib.use()`; backend selection stays explicit.
 
 - `show(*, block=False, pause=0.001)`
   - Drop-in replacement for `matplotlib.pyplot.show()`.
