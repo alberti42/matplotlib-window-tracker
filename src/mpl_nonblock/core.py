@@ -2,66 +2,22 @@ from __future__ import annotations
 
 import os
 import sys
-import warnings
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-_WARNED_ONCE: set[str] = set()
+from ._helpers import _WARNED_ONCE, _in_ipython, _ipython_simple_prompt, _warn_once
 
-
-def _warn_once(key: str, message: str, exc: BaseException | None = None) -> None:
-    """Emit a warning at most once per process for `key`.
-
-    This library runs in a wide range of Matplotlib backends and interactive shells.
-    Some backend-dependent operations can fail intermittently or be unsupported; we
-    intentionally treat those failures as non-fatal, but we still want them to be
-    visible during development/debugging.
-    """
-
-    if key in _WARNED_ONCE:
-        return
-    _WARNED_ONCE.add(key)
-
-    detail = f" ({exc.__class__.__name__}: {exc})" if exc is not None else ""
-    warnings.warn(f"{message}{detail}", RuntimeWarning, stacklevel=3)
-
-
-def _in_ipython() -> bool:
-    try:
-        from IPython import get_ipython  # type: ignore[import-not-found]
-
-        return get_ipython() is not None
-    except ModuleNotFoundError:
-        return False
-    except Exception as e:
-        # Best-effort: IPython may be partially installed/misconfigured.
-        _warn_once(
-            "in_ipython",
-            "mpl_nonblock: error while checking for IPython; assuming not in IPython",
-            e,
-        )
-        return False
-
-
-def _ipython_simple_prompt() -> bool:
-    if not _in_ipython():
-        return False
-    try:
-        from IPython import get_ipython  # type: ignore[import-not-found]
-
-        ip = get_ipython()
-        if ip is None:
-            return False
-        return bool(getattr(ip, "simple_prompt", False))
-    except Exception as e:
-        # Best-effort: attribute/layout can differ across IPython versions.
-        _warn_once(
-            "ipython_simple_prompt",
-            "mpl_nonblock: error while checking IPython simple_prompt; assuming False",
-            e,
-        )
-        return False
+__all__ = [
+    "BackendStatus",
+    "ShowStatus",
+    "diagnostics",
+    "ensure_backend",
+    "is_interactive",
+    "refresh",
+    "show",
+    "subplots",
+]
 
 
 def is_interactive() -> bool:

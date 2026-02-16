@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from typing import Any
 
+__all__ = [
+    "raise_figure",
+]
+
 
 def raise_figure(fig: Any) -> None:
     """Best-effort: raise the figure window (backend-dependent)."""
