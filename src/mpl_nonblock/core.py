@@ -266,56 +266,33 @@ def ensure_backend(
 
 
 def subplots(
-    tag: str,
-    *,
+    *args: Any,
+    tag: str | None = None,
+    num: Any | None = None,
     clear: bool = True,
-    nrows: int = 1,
-    ncols: int = 1,
     **kwargs: Any,
 ):
-    """Create/reuse a figure window keyed by `tag`.
+    """Drop-in replacement for `matplotlib.pyplot.subplots()` with stable window reuse.
 
-    Re-using the same `num` preserves the native window identity (and therefore
-    its position) across repeated calls in the same Python process.
+    You can specify the figure identity via `num=` (Matplotlib-compatible) or via
+    `tag=` (alias). For backward compatibility with this package's early API,
+    `subplots("my tag", ...)` is interpreted as `num="my tag"`.
     """
 
     import matplotlib.pyplot as plt
 
-    try:
-        return plt.subplots(
-            nrows,
-            ncols,
-            num=tag,
-            clear=clear,
-            **kwargs,
-        )
-    except TypeError:
-        # Older Matplotlib: no `clear=` on subplots.
-        figsize = kwargs.pop("figsize", None)
-        constrained_layout = kwargs.pop("constrained_layout", None)
-        fig = plt.figure(num=tag, figsize=figsize)
-        if clear:
-            try:
-                fig.clf()
-            except Exception as e:
-                # Best-effort: some backends/figure managers can reject clearing.
-                _warn_once(
-                    "subplots:fig_clf",
-                    "mpl_nonblock.subplots: fig.clf() failed; continuing",
-                    e,
-                )
-        if constrained_layout is not None:
-            try:
-                fig.set_constrained_layout(bool(constrained_layout))  # type: ignore[attr-defined]
-            except Exception as e:
-                # Best-effort: constrained_layout support depends on Matplotlib.
-                _warn_once(
-                    "subplots:constrained_layout",
-                    "mpl_nonblock.subplots: fig.set_constrained_layout() failed; continuing",
-                    e,
-                )
-        ax = fig.subplots(nrows, ncols, **kwargs)
-        return fig, ax
+    if args and isinstance(args[0], str) and tag is None and num is None:
+        tag = args[0]
+        args = args[1:]
+
+    if tag is not None:
+        if num is not None and num != tag:
+            raise TypeError("subplots() got both tag and num with different values")
+        num = tag
+
+    if num is None:
+        return plt.subplots(*args, clear=clear, **kwargs)
+    return plt.subplots(*args, num=num, clear=clear, **kwargs)
 
 
 @dataclass(frozen=True)
