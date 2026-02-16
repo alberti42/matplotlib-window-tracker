@@ -20,9 +20,21 @@ __all__ = [
 
 @dataclass(frozen=True)
 class ShowStatus:
-    """Return value for `show()` / `refresh()`.
+    """Small, explicit status object returned by `show()` / `refresh()`.
 
-    Captures what backend we were on and whether we actually used a nonblocking path.
+    Why it exists:
+    - Matplotlib "show" behavior is backend- and environment-dependent (GUI vs Agg,
+      IPython vs script, headless vs desktop). Returning a status makes that behavior
+      observable without printing/logging.
+
+    How it is used:
+    - Internally: tests assert that we do *not* attempt GUI actions on non-GUI
+      backends.
+    - For users: you can branch on `nonblocking_used` / inspect `reason` when a
+      window does not appear or when debugging backend configuration.
+
+    This is part of the public API to provide a stable, structured alternative to
+    backend-specific warnings.
     """
 
     backend: str
