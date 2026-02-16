@@ -21,12 +21,10 @@ __all__ = [
 def _backend_str() -> str:
     """Return the current Matplotlib backend string (best-effort)."""
 
-    try:
-        import matplotlib
+    import matplotlib
 
+    try:
         return str(matplotlib.get_backend())
-    except ModuleNotFoundError:
-        return "unknown"
     except Exception as e:
         _warn_once(
             "backend_str",
