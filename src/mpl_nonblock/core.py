@@ -112,6 +112,10 @@ def show(*, block: bool | None = False, pause: float = 0.001) -> ShowStatus:
 
     If you are writing a script (not IPython) and you want windows to stay open at
     the end, use `show(block=True)`.
+
+    Implementation note: `show(block=False)` pumps the GUI event loop (via
+    `plt.pause`) and therefore affects all open figures. This is convenient as a
+    single "GUI tick", but it can add overhead if you have many figures.
     """
 
     import matplotlib.pyplot as plt

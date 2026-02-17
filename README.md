@@ -191,9 +191,22 @@ Why both `refresh(fig)` and `show(block=False)`?
 
  - `refresh(fig)` is explicit and figure-focused: you updated that figure, so you refresh
    that figure. It is also the place for figure-specific options like `in_foreground=True`.
-- `show(block=False)` is a global "GUI tick": update one or many figures, then call
-  it once to keep all open windows responsive. This can be convenient in loops when you
-  don’t want to pass figure handles around.
+ - `show(block=False)` is a global "GUI tick": update one or many figures, then call
+   it once to keep all open windows responsive. This can be convenient in loops when you
+   don’t want to pass figure handles around.
+
+Notes on `show()`:
+- Matplotlib-compatible: it mirrors `plt.show(block=...)`, with the only difference that
+  this package defaults to `block=False`.
+- Global behavior: `show(block=False)` affects all open figures (not a single figure).
+- Overhead: if you keep many figures open, a global GUI tick can be slower than
+  refreshing only the figure you touched.
+- Focus: `show()` does not intentionally bring windows to the foreground (use
+  `refresh(fig, in_foreground=True)` if you want that).
+- Blocking (fallback case): use `show(block=True)` only when you run the script from
+  the terminal (e.g. `python your_script.py`) and you want the windows to stay open
+  after the script ends. In IPython you typically do not want to block, because your
+  session remains alive and the generated figures do not disappear when your script ends.
 
 ## Choosing a Backend
 
@@ -248,7 +261,7 @@ Import name is `mpl_nonblock`:
 
 - `show(*, block=False, pause=0.001)`
   - Drop-in replacement for `matplotlib.pyplot.show()`.
-  - Defaults to `block=False` (nonblocking) and uses `pause` to keep the GUI responsive.
+  - Defaults to `block=False` (nonblocking) and uses `pause` to pump GUI events.
   - On non-GUI backends (e.g. `Agg`, inline) it does nothing (no warnings).
 
 - `refresh(fig, *, pause=0.001, in_foreground=False)`
