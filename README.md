@@ -1,18 +1,25 @@
 # mpl-nonblock
 
-`mpl-nonblock` is a small, dependency-light helper library that makes Matplotlib
-behave nicely in interactive IPython workflows.
+This package, `mpl-nonblock`, is designed for scientists and anyone who prefers a
+script-based workflow (plain `.py` files) with IPython.
 
-[TODO] We need to explain that it is designed as a drop-in replacement for matplotlib to allow programming in ipython instead of jupyter notebook. This workflow is so much more useful these days that we can rely on agents for programming. Agents are less capable of modifying a jupyter notebook. Besides, jupyter notebooks should be avoided for complex projects.
+It solves two simple, practical annoyances that show up as soon as your code
+produces more than one plot:
 
-It focuses on two practical problems:
+- keep your workflow nonblocking: show/update many figures in one run without
+  having to repeatedly press Enter to continue
+- keep windows where you placed them: reuse the same OS windows across re-runs, so
+  you can refresh their contents instead of constantly chasing new windows around
 
-- tagged figure windows: re-use the same OS window across repeated runs (stable position)
-- nonblocking refresh: keep the backend event loop responsive without freezing your prompt
+Why a script-based workflow when you have Jupyter notebooks?
 
-It does not replace Matplotlib. It packages the common recipe
-(`pause`-driven event loop pumping) plus a few backend/IPython edge cases into a
-reusable, explicit API.
+Notebooks are great for a first exploration. But once your work grows into a real
+project (multiple files, refactors, repeated runs, version control), scripts tend
+to scale better and stay easier to maintain.
+
+This workflow is also agent-friendly: plain Python files are much easier to edit
+and refactor (by you and by coding assistants) than a notebook that accumulates
+hidden state over time.
 
 ## What You Get
 
@@ -129,7 +136,7 @@ if __name__ == "__main__":
 ```
 
 For finer control over backend selection (including cross-platform `matplotlib.use(...)`)
-see `## Choosing a Backend`.
+see [Choosing a Backend](#choosing-a-backend).
 
 ## How To Use `show()` vs `refresh()`
 
