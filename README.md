@@ -33,15 +33,15 @@ On macOS, the `macosx` backend is built in and does not require extra installati
 
 ## What You Get
 
-  - Stable window reuse (Matplotlib-native): use `plt.subplots(num=..., clear=...)` to
-    keep reusing the same OS window (stable position) across runs in the same process.
- - Nonblocking refresh for loops: call `refresh(fig)` after you changed what is plotted
-   (e.g. after `ax.plot(...)`, `ax.cla()`, `line.set_ydata(...)`, etc.). This keeps the
-   figure window responsive and lets you update many figures in one run.
- - Optional convenience `show()`: a small wrapper around Matplotlib `plt.show()` that
-   defaults to nonblocking behavior (and supports `show(block=True)` at the end of a script).
- - Bring window to foreground (optional): `refresh(fig, in_foreground=True)` attempts
-   to bring the figure window to the front on supported backends.
+- Stable window reuse (Matplotlib-native): use `plt.subplots(num=..., clear=...)` to
+  keep reusing the same OS window (stable position) across runs in the same process.
+- Nonblocking refresh for loops: call `refresh(fig)` after you changed what is plotted
+  (e.g. after `ax.plot(...)`, `ax.cla()`, `line.set_ydata(...)`, etc.). This keeps the
+  figure window responsive and lets you update many figures in one run.
+- Optional convenience `show()`: a small wrapper around Matplotlib `plt.show()` that
+  defaults to nonblocking behavior (and supports `show(block=True)` at the end of a script).
+- Bring window to foreground (optional): `refresh(fig, in_foreground=True)` attempts
+  to bring the figure window to the front on supported backends.
 - Diagnostics: `mpl-nonblock-diagnose` prints a small JSON blob that usually makes
   backend problems obvious.
 
@@ -230,7 +230,9 @@ to set the backend explicitly before importing `matplotlib.pyplot`:
 import matplotlib
 from mpl_nonblock import recommended_backend
 
-matplotlib.use(recommended_backend(), force=True)
+# `override=True` means "use my platform recommendation even if something already
+# selected a backend in this session".
+matplotlib.use(recommended_backend(override=True), force=True)
 import matplotlib.pyplot as plt
 ```
 
@@ -257,16 +259,23 @@ before running your code with:
 %run -i your_code.py
 ```
 
-Note: `%matplotlib ...` selects the backend for the running IPython session. If you
-also call `matplotlib.use(...)` in code, the effective backend is whichever selection
-happens first (and `%matplotlib` may override your earlier choice).
+You can set the backend either in code (`matplotlib.use(...)`) or in IPython
+(`%matplotlib ...`). If you use both, the backend that your code selects depends on
+what `recommended_backend()` returns.
+
+`recommended_backend()` defaults to `override=False`: if a backend already appears
+configured (e.g. via `%matplotlib ...` / `MPLBACKEND`), it returns the current backend.
+Pass `override=True` to force the platform recommendation even if something already
+selected a backend.
 
 ## API Overview
 
 Import name is `mpl_nonblock`:
 
- - `recommended_backend(macos="macosx", linux="TkAgg", windows="TkAgg", other="TkAgg")`
+ - `recommended_backend(macos="macosx", linux="TkAgg", windows="TkAgg", other="TkAgg", override=False)`
    - Returns a backend name recommendation for your platform.
+   - If a backend already appears configured (e.g. `%matplotlib ...` / `MPLBACKEND`), it
+     returns the current backend unless `override=True`.
    - Does not call `matplotlib.use()`; backend selection stays explicit.
 
 - `show(*, block=False, pause=0.001)`

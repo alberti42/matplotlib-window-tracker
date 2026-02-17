@@ -66,10 +66,14 @@ import matplotlib.pyplot as plt
 
 ## API Reference
 
-### `recommended_backend(macos="macosx", linux="TkAgg", windows="TkAgg", other="TkAgg") -> str`
+### `recommended_backend(macos="macosx", linux="TkAgg", windows="TkAgg", other="TkAgg", override=False) -> str`
 
-Returns a backend name recommendation for `sys.platform`. This does not call
-`matplotlib.use()`; it keeps backend selection explicit.
+Returns a backend name recommendation for `sys.platform`.
+
+If a backend already appears configured (e.g. `%matplotlib ...` / `MPLBACKEND`),
+it returns the current backend unless `override=True`.
+
+This does not call `matplotlib.use()`; it keeps backend selection explicit.
 
 ### `refresh(fig, *, pause=0.001, in_foreground=False) -> ShowStatus`
 

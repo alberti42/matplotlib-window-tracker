@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sys
 from typing import Any
 
@@ -70,12 +71,26 @@ def recommended_backend(
     linux: str = "TkAgg",
     windows: str = "TkAgg",
     other: str = "TkAgg",
+    override: bool = False,
 ) -> str:
     """Return a backend name recommendation for the current platform.
 
     This does not call `matplotlib.use()`. It only returns a string so users can
     make backend selection explicit and non-magical.
+
+    If a backend already appears to be configured (e.g. via `%matplotlib ...`,
+    `MPLBACKEND`, or importing `matplotlib.pyplot`), this returns the current backend
+    unless `override=True`.
     """
+
+    import matplotlib
+
+    current = str(matplotlib.get_backend())
+    if not override:
+        if os.environ.get("MPLBACKEND"):
+            return current
+        if "matplotlib.pyplot" in sys.modules:
+            return current
 
     plat = sys.platform
     if plat == "darwin":
