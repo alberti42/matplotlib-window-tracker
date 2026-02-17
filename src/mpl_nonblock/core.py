@@ -165,7 +165,12 @@ def show(*, block: bool | None = False, pause: float = 0.001) -> ShowStatus:
     )
 
 
-def hold_windows(*, poll: float = 0.05, prompt: str | None = None) -> None:
+def hold_windows(
+    *,
+    poll: float = 0.05,
+    prompt: str | None = None,
+    only_if_tty: bool = True,
+) -> None:
     """Keep Matplotlib windows alive at the end of a terminal-run script.
 
     This is a convenience for the common pattern:
@@ -184,6 +189,13 @@ def hold_windows(*, poll: float = 0.05, prompt: str | None = None) -> None:
     backend = _backend_str()
     if not _is_gui_backend(backend):
         return
+
+    if only_if_tty:
+        try:
+            if not sys.stdin.isatty():
+                return
+        except Exception:
+            return
 
     if prompt is not None:
         print(prompt, flush=True)
