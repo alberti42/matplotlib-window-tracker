@@ -104,7 +104,7 @@ def test_show_gui_backend_nonblocking_calls_expected_blocks(monkeypatch: Any) ->
     ]
 
 
-def test_show_gui_backend_nonblocking_raise_window_calls_raise_figure(
+def test_show_gui_backend_nonblocking_in_foreground_calls_raise_figure(
     monkeypatch: Any,
 ) -> None:
     _force_agg_backend()
@@ -121,7 +121,7 @@ def test_show_gui_backend_nonblocking_raise_window_calls_raise_figure(
 
     monkeypatch.setattr(backends, "raise_figure", lambda f: rec.add("raise_figure", f))
 
-    st = core.refresh(fig, raise_window=True)
+    st = core.refresh(fig, in_foreground=True)
     assert st.nonblocking_used is True
     assert ("raise_figure", fig) in rec.events
 
@@ -225,9 +225,9 @@ def test_show_nonblocking_each_block_failure_is_nonfatal_and_reports_key(
         if fail_key == "refresh:plt_pause":
             monkeypatch.setattr(plt, "pause", lambda dt: boom())
             core.refresh(fig)
-        elif fail_key == "refresh:raise_window":
+        elif fail_key == "refresh:in_foreground":
             monkeypatch.setattr(backends, "raise_figure", lambda f: boom())
-            core.refresh(fig, raise_window=True)
+            core.refresh(fig, in_foreground=True)
         else:
             raise AssertionError(f"unknown fail_key: {fail_key}")
 
@@ -235,7 +235,7 @@ def test_show_nonblocking_each_block_failure_is_nonfatal_and_reports_key(
 
     for key in (
         "refresh:plt_pause",
-        "refresh:raise_window",
+        "refresh:in_foreground",
     ):
         run(key)
 

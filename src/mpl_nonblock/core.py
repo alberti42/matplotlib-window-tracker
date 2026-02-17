@@ -47,13 +47,13 @@ def refresh(
     fig: Any,
     *,
     pause: float = 0.001,
-    raise_window: bool = False,
+    in_foreground: bool = False,
 ) -> ShowStatus:
     """Nonblocking refresh of a specific figure.
 
     This is the "movie frame" primitive: update artists, then call `refresh(fig)`
-    to pump the GUI event loop (via `plt.pause`). Optionally, try to raise/focus the
-    window via backend-specific hooks.
+    to pump the GUI event loop (via `plt.pause`). Optionally, try to bring the
+    figure window to the foreground via backend-specific hooks.
 
     If you are updating multiple Axes in the same Figure (e.g. subplots), call this
     once for that Figure.
@@ -81,15 +81,15 @@ def refresh(
             e,
         )
 
-    if raise_window:
+    if in_foreground:
         try:
-            from .backends import raise_figure
+            from . import backends
 
-            raise_figure(fig)
+            backends.raise_figure(fig)
         except Exception as e:
             _warn_once(
-                "refresh:raise_window",
-                "mpl_nonblock.refresh: raise_window failed; continuing",
+                "refresh:in_foreground",
+                "mpl_nonblock.refresh: in_foreground failed; continuing",
                 e,
             )
 

@@ -75,12 +75,12 @@ def _variant_fn(name: str) -> Callable[[Any, float], None]:
     if name == "mpl_nonblock.show+raise":
         from mpl_nonblock import refresh
 
-        return lambda fig, pause: refresh(fig, raise_window=True, pause=pause)
+        return lambda fig, pause: refresh(fig, in_foreground=True, pause=pause)
 
     if name == "mpl_nonblock.refresh":
         from mpl_nonblock import refresh
 
-        return lambda fig, pause: refresh(fig, raise_window=False, pause=pause)
+        return lambda fig, pause: refresh(fig, in_foreground=False, pause=pause)
 
     raise SystemExit(f"Unknown variant: {name!r}")
 

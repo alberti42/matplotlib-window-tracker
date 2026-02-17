@@ -30,8 +30,8 @@ hidden state over time.
    figure window responsive and lets you update many figures in one run.
  - Optional convenience `show()`: a small wrapper around Matplotlib `plt.show()` that
    defaults to nonblocking behavior (and supports `show(block=True)` at the end of a script).
-- Best-effort window raising (optional): `refresh(fig, raise_window=True)` attempts
-  to bring the figure window to the front on supported backends.
+ - Bring window to foreground (optional): `refresh(fig, in_foreground=True)` attempts
+   to bring the figure window to the front on supported backends.
 - Diagnostics: `mpl-nonblock-diagnose` prints a small JSON blob that usually makes
   backend problems obvious.
 
@@ -189,8 +189,8 @@ show(block=True)
 
 Why both `refresh(fig)` and `show(block=False)`?
 
-- `refresh(fig)` is explicit and figure-focused: you updated that figure, so you refresh
-  that figure. It is also the place for figure-specific options like `raise_window=True`.
+ - `refresh(fig)` is explicit and figure-focused: you updated that figure, so you refresh
+   that figure. It is also the place for figure-specific options like `in_foreground=True`.
 - `show(block=False)` is a global "GUI tick": update one or many figures, then call
   it once to keep all open windows responsive. This can be convenient in loops when you
   don’t want to pass figure handles around.
@@ -251,9 +251,9 @@ Import name is `mpl_nonblock`:
   - Defaults to `block=False` (nonblocking) and uses `pause` to keep the GUI responsive.
   - On non-GUI backends (e.g. `Agg`, inline) it does nothing (no warnings).
 
-- `refresh(fig, *, pause=0.001, raise_window=False)`
+- `refresh(fig, *, pause=0.001, in_foreground=False)`
   - Nonblocking refresh of a specific figure (useful for animations / repeated updates).
-  - If `raise_window=True`, it attempts to raise/focus the window (best-effort).
+  - If `in_foreground=True`, it attempts to bring the window to the foreground (best-effort).
 
 - `is_interactive()`
   - Returns `True` when running inside IPython/Jupyter or a REPL-ish session
@@ -332,8 +332,8 @@ This prints a JSON blob (backend, interpreter, DISPLAY/WAYLAND hints).
 - This library does not attempt to persist window geometry across separate processes.
 - Backend switching is only possible before importing `matplotlib.pyplot`.
 - On non-GUI backends (inline/Agg), `show()` cannot open windows.
-- Window raising/focus is backend-dependent. Matplotlib does not expose a single
-  portable "raise this figure" API, so `raise_window` may be a no-op on some setups.
+- Bringing a window to the foreground is backend-dependent. Matplotlib does not expose
+  a single portable API for this, so `in_foreground` may be a no-op on some setups.
 
 ## License
 
