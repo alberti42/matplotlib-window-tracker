@@ -242,9 +242,9 @@ before importing `matplotlib.pyplot`:
 import matplotlib
 from mpl_nonblock import recommended_backend
 
-# `override=True` means "use my platform recommendation even if something already selected
-# a backend in this session (e.g., via magic %matplotlib)".
-matplotlib.use(recommended_backend(override=False), force=False)
+# `respect_existing=True` means "if something already selected a backend in this session
+# (e.g. via `%matplotlib` / environment variable `MPLBACKEND`), keep using it".
+matplotlib.use(recommended_backend(respect_existing=True), force=True)
 import matplotlib.pyplot as plt
 ```
 
@@ -271,37 +271,36 @@ before running your code with:
 ```
 
 Hence, you can set the backend either in code (`matplotlib.use(...)`) or in IPython
-(`%matplotlib ...`). However, if you use both, the backend that your code selects depends on
-what you provide to `matplotlib.use()` and, therefore, what `recommended_backend()` returns.
+(`%matplotlib ...`). If you use both, the backend your code selects depends on what
+`recommended_backend()` returns.
 
-If a backend is already set, `recommended_backend()` returns the backend that is set
-(e.g. via `%matplotlib ...` / environment variable `MPLBACKEND`); this is the default behavior.
-However, with `override=True`, it always returns the platform recommendation, regardless of
-whether a backend was already set.
+By default (`respect_existing=True`), `recommended_backend()` returns an already-selected
+backend (e.g. via `%matplotlib ...` / environment variable `MPLBACKEND`). Set
+`respect_existing=False` to always return the platform recommendation.
 
 About `matplotlib.use(..., force=...)`:
 
-- `force=False` (recommended) is the safe default. If a backend is already selected,
-  Matplotlib will typically keep it.
-- `force=True` asks Matplotlib to switch even if a backend was selected earlier. This can be
-  useful very early in program startup, but it can also be confusing (or cause side effects)
-  if `matplotlib.pyplot` is already imported (e.g., existing figures may be closed).
+- `force=True` (recommended) raises an error if the backend cannot be set up.
+- `force=False` silently ignores failures.
+
+`force` does not mean "force a switch". Switching backends after importing
+`matplotlib.pyplot` can close existing figures (Matplotlib may call `plt.close('all')`).
 
 Recommended practice:
 
 - In scripts, set the backend once, early, before importing `matplotlib.pyplot`.
-- In IPython, if you want to override what the script would pick, use `%matplotlib ...`
-  and keep `recommended_backend(override=False)` in code.
+- In IPython, if you want to preselect a backend for the session, use `%matplotlib ...`
+  and keep `recommended_backend(respect_existing=True)` in code.
 
 ## API Overview
 
 Import name is `mpl_nonblock`:
 
- - `recommended_backend(macos="macosx", linux="TkAgg", windows="TkAgg", other="TkAgg", override=False)`
-   - Returns a backend name recommendation for your platform.
-   - If a backend already appears configured (e.g. `%matplotlib ...` / `MPLBACKEND`), it
-     returns the current backend unless `override=True`.
-   - Does not call `matplotlib.use()`; backend selection stays explicit.
+ - `recommended_backend(macos="macosx", linux="TkAgg", windows="TkAgg", other="TkAgg", respect_existing=True)`
+    - Returns a backend name recommendation for your platform.
+    - If a backend already appears configured (e.g. `%matplotlib ...` / `MPLBACKEND`), it
+      returns the current backend when `respect_existing=True`.
+    - Does not call `matplotlib.use()`; backend selection stays explicit.
 
  - `show(*, block=False, pause=0.001)`
   - Drop-in replacement for `matplotlib.pyplot.show()`.

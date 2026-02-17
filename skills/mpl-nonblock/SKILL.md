@@ -66,12 +66,12 @@ import matplotlib.pyplot as plt
 
 ## API Reference
 
-### `recommended_backend(macos="macosx", linux="TkAgg", windows="TkAgg", other="TkAgg", override=False) -> str`
+### `recommended_backend(macos="macosx", linux="TkAgg", windows="TkAgg", other="TkAgg", respect_existing=True) -> str`
 
 Returns a backend name recommendation for `sys.platform`.
 
 If a backend already appears configured (e.g. `%matplotlib ...` / `MPLBACKEND`),
-it returns the current backend unless `override=True`.
+it returns the current backend when `respect_existing=True`.
 
 This does not call `matplotlib.use()`; it keeps backend selection explicit.
 

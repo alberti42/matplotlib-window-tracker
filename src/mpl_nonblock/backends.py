@@ -83,7 +83,7 @@ def recommended_backend(
     linux: str = "TkAgg",
     windows: str = "TkAgg",
     other: str = "TkAgg",
-    override: bool = False,
+    respect_existing: bool = True,
 ) -> str:
     """Return a backend name recommendation for the current platform.
 
@@ -92,13 +92,13 @@ def recommended_backend(
 
     If a backend already appears to be configured (e.g. via `%matplotlib ...`,
     `MPLBACKEND`, or importing `matplotlib.pyplot`), this returns the current backend
-    unless `override=True`.
+    when `respect_existing=True` (default).
     """
 
     import matplotlib
 
     current = str(matplotlib.get_backend())
-    if not override:
+    if respect_existing:
         if os.environ.get("MPLBACKEND"):
             return current
         if "matplotlib.pyplot" in sys.modules:
