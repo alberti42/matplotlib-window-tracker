@@ -34,6 +34,13 @@ addopts = "-q"
 packages = ["src/mpl_nonblock"]
 
 [tool.hatch.build.targets.sdist]
+ignore-vcs = true
+only-include = [
+  "src/mpl_nonblock",
+  "pyproject.toml",
+  "README.md",
+  "LICENSE",
+]
 exclude = [
   "bin/",
   "examples/",
