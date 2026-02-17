@@ -21,6 +21,16 @@ This workflow is also agent-friendly: plain Python files are much easier to edit
 and refactor (by you and by coding assistants) than a notebook that accumulates
 hidden state over time.
 
+One nice side-effect of this workflow: you can run a script that generates figures,
+then keep working in the same IPython session (inspect results, tweak parameters,
+generate more figures) while the generated figures stay visible. In contrast,
+without `mpl-nonblock`, if you ran the same script from the terminal in a
+noninteractive Python session, you would lose the ability to inspect the generated
+figures after the program exited at the end.
+
+For this to work you need a GUI backend (see [Choosing a Backend](#choosing-a-backend)).
+On macOS, the `macosx` backend is built in and does not require extra installation.
+
 ## What You Get
 
   - Stable window reuse (Matplotlib-native): use `plt.subplots(num=..., clear=...)` to
