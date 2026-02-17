@@ -27,6 +27,11 @@ reusable, explicit API.
 - Diagnostics: `mpl-nonblock-diagnose` prints a small JSON blob that usually makes
   backend problems obvious.
 
+## Requirements
+
+- Python >= 3.10
+- Matplotlib >= 3.5
+
 ## Install
 
 Using `uv` (recommended):
@@ -63,8 +68,6 @@ re-running those scripts smoothly while keeping multiple figure windows responsi
 1) Put your plotting code in a file, e.g. `your_script.py`:
 
 ```python
-from __future__ import annotations
-
 import time
 
 import matplotlib.pyplot as plt
