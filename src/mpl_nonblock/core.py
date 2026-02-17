@@ -180,6 +180,12 @@ def hold_windows(
 
     `hold_windows()` waits until the user presses Enter or all windows are closed,
     while keeping the GUI responsive.
+
+    Parameters:
+    - poll: seconds to wait between GUI event processing steps.
+    - prompt: optional message printed before waiting.
+    - only_if_tty: if True (default), do nothing when stdin is not a TTY.
+      This avoids blocking in non-interactive environments (CI, piped input).
     """
 
     import threading

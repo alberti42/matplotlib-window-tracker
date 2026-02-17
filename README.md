@@ -303,21 +303,25 @@ Import name is `mpl_nonblock`:
      returns the current backend unless `override=True`.
    - Does not call `matplotlib.use()`; backend selection stays explicit.
 
-- `show(*, block=False, pause=0.001)`
+ - `show(*, block=False, pause=0.001)`
   - Drop-in replacement for `matplotlib.pyplot.show()`.
   - Defaults to `block=False` (nonblocking) and uses `pause` to pump GUI events.
   - On non-GUI backends (e.g. `Agg`, inline) it does nothing (no warnings).
 
-- `refresh(fig, *, pause=0.001, in_foreground=False)`
+ - `refresh(fig, *, pause=0.001, in_foreground=False)`
   - Nonblocking refresh of a specific figure (useful for animations / repeated updates).
   - If `in_foreground=True`, it attempts to bring the window to the foreground (best-effort).
 
-- `is_interactive()`
+ - `is_interactive()`
   - Returns `True` when running inside IPython/Jupyter or a REPL-ish session
     (checks for IPython, `sys.ps1`, and `sys.flags.interactive`).
 
-- `diagnostics()`
-  - Returns a small dict (backend, interactive detection, headless hints).
+ - `diagnostics()`
+   - Returns a small dict (backend, interactive detection, headless hints).
+
+ - `hold_windows(*, poll=0.05, prompt=None, only_if_tty=True)`
+   - Terminal-run fallback: keep windows open after a script ends, while keeping the GUI responsive.
+   - Returns when the user presses Enter or when all figure windows are closed.
 
 ## Demos
 
