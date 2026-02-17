@@ -36,29 +36,44 @@ reusable, explicit API.
 
 Using `uv` (recommended):
 
+<details>
+<summary>Show command</summary>
+
 ```bash
 uv pip install "mpl-nonblock @ git+https://github.com/alberti42/mpl-nonblock.git"
-```
-
-Using `pip`:
-
-```bash
-pip install "mpl-nonblock @ git+https://github.com/alberti42/mpl-nonblock.git"
 ```
 
 Pin a specific version (recommended to avoid future breaking changes):
 
 ```bash
-pip install "mpl-nonblock @ git+https://github.com/alberti42/mpl-nonblock.git@1.1.0"
+uv pip install "mpl-nonblock @ git+https://github.com/alberti42/mpl-nonblock.git@1.1.0"
 ```
 
+</details>
+
+Using `pip`:
+
+<details>
+<summary>Show command</summary>
+
+```bash
+pip install "mpl-nonblock @ git+https://github.com/alberti42/mpl-nonblock.git"
+```
+
+</details>
+
 Optional (Qt convenience; installs PySide6):
+
+<details>
+<summary>Show command</summary>
 
 ```bash
 pip install "mpl-nonblock[qt]"
 ```
 
 This installs the optional Qt dependency (`PySide6`).
+
+</details>
 
 ## Quickstart
 
