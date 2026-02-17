@@ -263,10 +263,10 @@ You can set the backend either in code (`matplotlib.use(...)`) or in IPython
 (`%matplotlib ...`). If you use both, the backend that your code selects depends on
 what `recommended_backend()` returns.
 
-`recommended_backend()` defaults to `override=False`: if a backend already appears
-configured (e.g. via `%matplotlib ...` / `MPLBACKEND`), it returns the current backend.
-Pass `override=True` to force the platform recommendation even if something already
-selected a backend.
+If a backend is already set, `recommended_backend()` returns the backend that is set
+(e.g. via `%matplotlib ...` / `MPLBACKEND`); this is the default behavior. However,
+with `override=True`, it returns the platform recommendation, regardless of whether
+a backend was already set.
 
 ## API Overview
 
