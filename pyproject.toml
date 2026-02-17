@@ -32,3 +32,15 @@ addopts = "-q"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/mpl_nonblock"]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "bin/",
+  "examples/",
+  "tests/",
+  "skills/",
+  ".github/",
+  ".venv/",
+  "tests.py",
+  ".DS_Store",
+]
