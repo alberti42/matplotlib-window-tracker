@@ -5,7 +5,7 @@ license: MIT
 metadata:
   author: Andrea Alberti (2026)
   package_repo: https://github.com/alberti42/mpl-nonblock
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # Skill: mpl-nonblock
@@ -36,9 +36,9 @@ Suggested question to ask the user (only when relevant):
 Only install if the user explicitly asks for it; the package may already be available in the environment. Ask the user whether a specific release should be pinned (recommended for reproducibility and to avoid future incompatibilities). If unsure, prefer pinning the latest known-good release.
 
 ```bash
-uv pip install "mpl-nonblock @ git+https://github.com/alberti42/mpl-nonblock.git@v1.0.0"
+uv pip install "mpl-nonblock @ git+https://github.com/alberti42/mpl-nonblock.git@v1.1.0"
 # or (if `uv` is not available)
-pip install "mpl-nonblock @ git+https://github.com/alberti42/mpl-nonblock.git@v1.0.0"
+pip install "mpl-nonblock @ git+https://github.com/alberti42/mpl-nonblock.git@v1.1.0"
 ```
 
 # Unpinned (installs current default-branch HEAD; not recommended for reproducibility)
