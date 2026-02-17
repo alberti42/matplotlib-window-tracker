@@ -287,13 +287,7 @@ Import name is `mpl_nonblock`:
 
 ## Demos
 
-Two tagged windows (sin/cos):
-
-```bash
-mpl-nonblock-two-windows
-```
-
-From source checkout:
+Two tagged windows (sin/cos) from a source checkout:
 
 ```bash
 python examples/two_windows.py

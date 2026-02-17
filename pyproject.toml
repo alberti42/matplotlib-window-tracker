@@ -24,7 +24,6 @@ test = [
 
 [project.scripts]
 mpl-nonblock-diagnose = "mpl_nonblock.diagnose:main"
-mpl-nonblock-two-windows = "mpl_nonblock.demos:two_windows_main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
