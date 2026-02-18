@@ -12,6 +12,7 @@ except ModuleNotFoundError as e:  # pragma: no cover
 from .backends import raise_figure, recommended_backend
 from ._helpers import is_interactive
 from .core import hold_windows
+from .geometry_cache import WindowTracker, track_position_size
 
 try:
     __version__ = version("mpl-nonblock")
@@ -24,4 +25,6 @@ __all__ = [
     "is_interactive",
     "raise_figure",
     "recommended_backend",
+    "track_position_size",
+    "WindowTracker",
 ]
