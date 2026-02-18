@@ -6,7 +6,7 @@ __pycache__/
 .ruff_cache/
 .mypy_cache/
 .venv/
-.mpl-nonblock/
+.matplotlib-window-tracker/
 dist/
 build/
 *.egg-info/

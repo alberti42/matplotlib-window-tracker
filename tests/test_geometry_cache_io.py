@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 def test_upsert_entry_writes_file(tmp_path: Path) -> None:
-    from mpl_nonblock import geometry_cache
+    from matplotlib_window_tracker import geometry_cache
 
     p = tmp_path / "window_geometry.json"
     wrote = geometry_cache._upsert_entry(
@@ -28,7 +28,7 @@ def test_upsert_entry_writes_file(tmp_path: Path) -> None:
 
 
 def test_upsert_entry_skips_when_unchanged(tmp_path: Path) -> None:
-    from mpl_nonblock import geometry_cache
+    from matplotlib_window_tracker import geometry_cache
 
     p = tmp_path / "window_geometry.json"
     entry = {"frame": [1, 2, 3, 4], "screen_id": 1, "screen_frame": [0, 0, 100, 100]}
@@ -43,7 +43,7 @@ def test_upsert_entry_skips_when_unchanged(tmp_path: Path) -> None:
 
 
 def test_upsert_entry_recovers_from_corrupt_file(tmp_path: Path) -> None:
-    from mpl_nonblock import geometry_cache
+    from matplotlib_window_tracker import geometry_cache
 
     p = tmp_path / "window_geometry.json"
     p.write_text("{not json", encoding="utf-8")

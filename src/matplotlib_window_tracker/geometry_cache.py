@@ -191,13 +191,13 @@ def _resolve_cache_dir(cache_dir: str | os.PathLike[str] | None) -> Path:
 
     Resolution order:
     1) explicit `cache_dir`
-    2) environment variable `MPL_NONBLOCK_CACHE_DIR`
+    2) environment variable `MATPLOTLIB_WINDOW_TRACKER_CACHE_DIR`
     3) default:
        - interactive sessions: current working directory
        - script runs: directory of the entry script (when detectable)
        - otherwise: current working directory
 
-    The returned path includes the `.mpl-nonblock` subdirectory.
+    The returned path includes the `.matplotlib-window-tracker` subdirectory.
 
     This function never raises. If it cannot determine a script directory, it
     falls back to the current working directory.
@@ -205,14 +205,14 @@ def _resolve_cache_dir(cache_dir: str | os.PathLike[str] | None) -> Path:
 
     if cache_dir is not None:
         root = Path(cache_dir)
-        return root / ".mpl-nonblock"
+        return root / ".matplotlib-window-tracker"
 
-    env = os.environ.get("MPL_NONBLOCK_CACHE_DIR")
+    env = os.environ.get("MATPLOTLIB_WINDOW_TRACKER_CACHE_DIR")
     if env:
-        return Path(env) / ".mpl-nonblock"
+        return Path(env) / ".matplotlib-window-tracker"
 
     if is_interactive():
-        return Path.cwd() / ".mpl-nonblock"
+        return Path.cwd() / ".matplotlib-window-tracker"
 
     # Script mode: try to use the entry script directory.
     try:
@@ -227,11 +227,11 @@ def _resolve_cache_dir(cache_dir: str | os.PathLike[str] | None) -> Path:
 
     try:
         if p.suffix == ".py" and p.exists():
-            return p.resolve().parent / ".mpl-nonblock"
+            return p.resolve().parent / ".matplotlib-window-tracker"
     except Exception:
         pass
 
-    return Path.cwd() / ".mpl-nonblock"
+    return Path.cwd() / ".matplotlib-window-tracker"
 
 
 def _cache_file_path(cache_dir: str | os.PathLike[str] | None) -> Path:
@@ -472,8 +472,8 @@ def track_position_size(
     - restore_from_cache: if True (default), restore a cached frame before
       subscribing to events.
     - cache_dir: optional override for the cache root directory.
-      If omitted, `MPL_NONBLOCK_CACHE_DIR` may be used; otherwise a default
-      location is chosen.
+      If omitted, `MATPLOTLIB_WINDOW_TRACKER_CACHE_DIR` may be used; otherwise a
+      default location is chosen.
     """
 
     if not isinstance(tag, str) or not tag:

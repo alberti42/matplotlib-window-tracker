@@ -15,7 +15,7 @@ def main() -> None:
     matplotlib.use("macosx")
     import matplotlib.pyplot as plt
 
-    from mpl_nonblock import hold_windows, track_position_size
+    from matplotlib_window_tracker import hold_windows, track_position_size
 
     fig1, ax1 = plt.subplots(num="Window A", clear=True)
     ax1.plot([0, 1], [0, 1])

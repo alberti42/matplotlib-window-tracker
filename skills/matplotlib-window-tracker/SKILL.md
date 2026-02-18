@@ -1,16 +1,16 @@
 ---
-name: mpl-nonblock
-description: Integrate mpl-nonblock for nonblocking Matplotlib workflows in IPython-driven, script-based exploration.
+name: matplotlib-window-tracker
+description: Integrate matplotlib-window-tracker for persistent Matplotlib window geometry (macOS) and terminal-run helpers.
 license: MIT
 metadata:
   author: Andrea Alberti (2026)
-  package_repo: https://github.com/alberti42/mpl-nonblock
-  version: 1.2.0
+  package_repo: https://github.com/alberti42/matplotlib-window-tracker
+  version: 1.2.1
 ---
 
-# Skill: mpl-nonblock
+# Skill: matplotlib-window-tracker
 
-Use this skill when integrating `mpl-nonblock` into Python code that uses
+Use this skill when integrating `matplotlib-window-tracker` into Python code that uses
 Matplotlib from a script-based workflow driven by IPython (re-run scripts, keep
 multiple native windows responsive).
 
@@ -34,7 +34,7 @@ Useful grep targets:
 
 ## Agent defaults (important)
 
-- Assume Matplotlib is available. `mpl-nonblock` is a Matplotlib companion.
+- Assume Matplotlib is available. `matplotlib-window-tracker` is a Matplotlib companion.
 - Keep integration explicit (no backend guessing, no large fallback stacks).
 - Do not wrap `matplotlib.pyplot.show()` or `plt.pause()` for the user. Use
   Matplotlib primitives directly.
@@ -51,15 +51,15 @@ Suggested question to ask the user (only when relevant):
 Only install if the user explicitly asks for it; the package may already be available in the environment. Ask the user whether a specific release should be pinned (recommended for reproducibility and to avoid future incompatibilities). If unsure, prefer pinning the latest known-good release.
 
 ```bash
-uv pip install "mpl-nonblock @ git+https://github.com/alberti42/mpl-nonblock.git@v1.2.0"
+uv pip install "matplotlib-window-tracker @ git+https://github.com/alberti42/matplotlib-window-tracker.git@v1.2.1"
 # or (if `uv` is not available)
-pip install "mpl-nonblock @ git+https://github.com/alberti42/mpl-nonblock.git@v1.2.0"
+pip install "matplotlib-window-tracker @ git+https://github.com/alberti42/matplotlib-window-tracker.git@v1.2.1"
 ```
 
 # Unpinned (installs current default-branch HEAD; not recommended for reproducibility)
 
 ```bash
-pip install "mpl-nonblock @ git+https://github.com/alberti42/mpl-nonblock.git"
+pip install "matplotlib-window-tracker @ git+https://github.com/alberti42/matplotlib-window-tracker.git"
 ```
 
 ## Backend Selection (explicit)
@@ -73,7 +73,7 @@ For cross-platform scripts:
 
 ```python
 import matplotlib
-from mpl_nonblock import recommended_backend
+from matplotlib_window_tracker import recommended_backend
 
 matplotlib.use(recommended_backend(), force=True)
 import matplotlib.pyplot as plt
@@ -149,7 +149,7 @@ for k in range(200):
 ```python
 import matplotlib.pyplot as plt
 
-from mpl_nonblock import hold_windows, is_interactive
+from matplotlib_window_tracker import hold_windows, is_interactive
 
 fig, ax = plt.subplots(num="Result", clear=True)
 ax.plot(x, y)
@@ -167,7 +167,7 @@ import matplotlib
 matplotlib.use("macosx")
 import matplotlib.pyplot as plt
 
-from mpl_nonblock import track_position_size
+from matplotlib_window_tracker import track_position_size
 
 fig, ax = plt.subplots()
 tracker = track_position_size(fig, tag="my_window")

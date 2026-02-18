@@ -17,7 +17,7 @@ def _make_enterkey_checker() -> tuple[
 ]:
     """Return (context_manager, checker, supported) for Enter detection.
 
-    This is used by `mpl_nonblock.hold_windows()`.
+    This is used by `matplotlib_window_tracker.hold_windows()`.
 
     Returns:
     - context_manager: a context manager to be entered while polling. For Enter
@@ -46,7 +46,7 @@ def _make_enterkey_checker() -> tuple[
     except Exception as e:
         _warn_once(
             "hold_windows:enter_thread",
-            "mpl_nonblock.hold_windows: Enter trigger unavailable; ignoring keypress",
+            "matplotlib_window_tracker.hold_windows: Enter trigger unavailable; ignoring keypress",
             e,
         )
         return contextlib.nullcontext(), lambda: False, False
@@ -59,7 +59,7 @@ def _make_anykey_checker() -> tuple[
 ]:
     """Return (context_manager, checker, supported) for 'any key' detection.
 
-    This is used by `mpl_nonblock.hold_windows()`.
+    This is used by `matplotlib_window_tracker.hold_windows()`.
 
     Returns:
     - context_manager: a context manager to be entered while polling. On POSIX
@@ -78,7 +78,7 @@ def _make_anykey_checker() -> tuple[
         except Exception as e:
             _warn_once(
                 "hold_windows:anykey_import",
-                "mpl_nonblock.hold_windows: AnyKey trigger unavailable; falling back to Enter",
+                "matplotlib_window_tracker.hold_windows: AnyKey trigger unavailable; falling back to Enter",
                 e,
             )
             return contextlib.nullcontext(), lambda: False, False
@@ -104,7 +104,7 @@ def _make_anykey_checker() -> tuple[
     except Exception as e:
         _warn_once(
             "hold_windows:anykey_import",
-            "mpl_nonblock.hold_windows: AnyKey trigger unavailable; falling back to Enter",
+            "matplotlib_window_tracker.hold_windows: AnyKey trigger unavailable; falling back to Enter",
             e,
         )
         return contextlib.nullcontext(), lambda: False, False
@@ -114,7 +114,7 @@ def _make_anykey_checker() -> tuple[
     except Exception as e:
         _warn_once(
             "hold_windows:anykey_fileno",
-            "mpl_nonblock.hold_windows: AnyKey trigger unavailable; falling back to Enter",
+            "matplotlib_window_tracker.hold_windows: AnyKey trigger unavailable; falling back to Enter",
             e,
         )
         return contextlib.nullcontext(), lambda: False, False

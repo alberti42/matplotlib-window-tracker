@@ -111,7 +111,9 @@ def _replace_pinned_git_tag(path: Path, new_version: str) -> bool:
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description="Bump mpl-nonblock project version")
+    p = argparse.ArgumentParser(
+        description="Bump matplotlib-window-tracker project version"
+    )
     g = p.add_mutually_exclusive_group(required=True)
     g.add_argument("--set", metavar="X.Y.Z", help="Set version explicitly")
     g.add_argument("--major", action="store_true", help="Bump major")
@@ -147,7 +149,7 @@ def main(argv: list[str] | None = None) -> int:
     updated: list[str] = []
     for rel in (
         Path("README.md"),
-        Path("skills/mpl-nonblock/SKILL.md"),
+        Path("skills/matplotlib-window-tracker/SKILL.md"),
     ):
         path = root / rel
         if not path.exists():

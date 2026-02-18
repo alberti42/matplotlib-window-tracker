@@ -2,7 +2,7 @@ from __future__ import annotations
 
 
 def main() -> None:
-    """Demo for mpl_nonblock.recommended_backend().
+    """Demo for matplotlib_window_tracker.recommended_backend().
 
     This example keeps Matplotlib behavior native:
     - select a backend explicitly (before importing pyplot)
@@ -13,7 +13,7 @@ def main() -> None:
 
     import matplotlib
 
-    from mpl_nonblock import hold_windows, recommended_backend
+    from matplotlib_window_tracker import hold_windows, recommended_backend
 
     matplotlib.use(recommended_backend(respect_existing=True), force=True)
     import matplotlib.pyplot as plt

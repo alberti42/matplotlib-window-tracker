@@ -2,14 +2,14 @@ from __future__ import annotations
 
 
 def main() -> None:
-    """Demo for mpl_nonblock.hold_windows().
+    """Demo for matplotlib_window_tracker.hold_windows().
 
     Run this from a terminal. Close the figure window(s) or press a key to exit.
     """
 
     import matplotlib.pyplot as plt
 
-    from mpl_nonblock import hold_windows
+    from matplotlib_window_tracker import hold_windows
 
     fig, ax = plt.subplots(num="hold_windows demo", clear=True)
     ax.plot([0, 1], [0, 1])

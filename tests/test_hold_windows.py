@@ -19,7 +19,7 @@ def test_hold_windows_returns_immediately_when_no_figures(monkeypatch: Any) -> N
 
     import matplotlib.pyplot as plt
 
-    from mpl_nonblock import core
+    from matplotlib_window_tracker import core
 
     monkeypatch.setattr(core.sys.stdin, "isatty", lambda: True)
     monkeypatch.setattr(plt, "get_fignums", lambda: [])
@@ -35,8 +35,8 @@ def test_hold_windows_exits_on_enter(monkeypatch: Any) -> None:
 
     import matplotlib.pyplot as plt
 
-    from mpl_nonblock import core
-    from mpl_nonblock import terminal
+    from matplotlib_window_tracker import core
+    from matplotlib_window_tracker import terminal
 
     monkeypatch.setattr(core.sys.stdin, "isatty", lambda: True)
     monkeypatch.setattr(terminal.sys.stdin, "readline", lambda: "\n")
@@ -66,7 +66,7 @@ def test_hold_windows_only_if_tty(monkeypatch: Any) -> None:
 
     import matplotlib.pyplot as plt
 
-    from mpl_nonblock import core
+    from matplotlib_window_tracker import core
 
     monkeypatch.setattr(core.sys.stdin, "isatty", lambda: False)
     monkeypatch.setattr(plt, "get_fignums", lambda: [1])
@@ -80,9 +80,9 @@ def test_hold_windows_exits_on_any_key_windows_path(monkeypatch: Any) -> None:
 
     import matplotlib.pyplot as plt
 
-    from mpl_nonblock import core
+    from matplotlib_window_tracker import core
 
-    from mpl_nonblock import terminal
+    from matplotlib_window_tracker import terminal
 
     # Use the Windows (msvcrt) code path even on non-Windows test runners.
     monkeypatch.setattr(terminal.sys, "platform", "win32")

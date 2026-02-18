@@ -4,7 +4,7 @@ from typing import Any
 
 
 def test_new_cache_has_expected_top_level_keys() -> None:
-    from mpl_nonblock import geometry_cache
+    from matplotlib_window_tracker import geometry_cache
 
     c = geometry_cache._new_cache()
     assert c["version"] == 1
@@ -13,21 +13,21 @@ def test_new_cache_has_expected_top_level_keys() -> None:
 
 
 def test_coerce_cache_rejects_non_dict() -> None:
-    from mpl_nonblock import geometry_cache
+    from matplotlib_window_tracker import geometry_cache
 
     c = geometry_cache._coerce_cache(None)
     assert c == geometry_cache._new_cache()
 
 
 def test_coerce_cache_rejects_other_versions() -> None:
-    from mpl_nonblock import geometry_cache
+    from matplotlib_window_tracker import geometry_cache
 
     c = geometry_cache._coerce_cache({"version": 999, "machines": {}, "entries": {}})
     assert c == geometry_cache._new_cache()
 
 
 def test_set_entry_creates_expected_structure() -> None:
-    from mpl_nonblock import geometry_cache
+    from matplotlib_window_tracker import geometry_cache
 
     machine_id = "m1"
     tag = "winA"
@@ -47,7 +47,7 @@ def test_set_entry_creates_expected_structure() -> None:
 
 
 def test_get_entry_is_machine_specific() -> None:
-    from mpl_nonblock import geometry_cache
+    from matplotlib_window_tracker import geometry_cache
 
     cache: dict[str, Any] = geometry_cache._new_cache()
     geometry_cache._set_entry(

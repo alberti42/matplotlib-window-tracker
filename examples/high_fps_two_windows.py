@@ -24,7 +24,7 @@ def main(argv: list[str] | None = None) -> int:
 
     import matplotlib.pyplot as plt
 
-    from mpl_nonblock import hold_windows, is_interactive
+    from matplotlib_window_tracker import hold_windows, is_interactive
 
     n = max(args.n, 10)
     x = [i / (n - 1) for i in range(n)]

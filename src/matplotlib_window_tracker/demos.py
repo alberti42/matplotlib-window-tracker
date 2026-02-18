@@ -22,7 +22,7 @@ def two_windows_main() -> None:
     #   %matplotlib tk      (Linux)
     # In scripts, do this before importing pyplot:
     #   import matplotlib
-    #   from mpl_nonblock import recommended_backend
+    #   from matplotlib_window_tracker import recommended_backend
     #   matplotlib.use(recommended_backend(), force=True)
 
     stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]

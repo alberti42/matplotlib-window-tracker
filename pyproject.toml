@@ -3,9 +3,9 @@ requires = ["hatchling>=1.21"]
 build-backend = "hatchling.build"
 
 [project]
-name = "mpl-nonblock"
-version = "1.2.0"
-description = "Nonblocking Matplotlib helpers for interactive IPython workflows"
+name = "matplotlib-window-tracker"
+version = "1.2.1"
+description = "Persist Matplotlib window geometry across runs (macOS) + terminal-run helpers"
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
@@ -27,12 +27,12 @@ testpaths = ["tests"]
 addopts = "-q"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/mpl_nonblock"]
+packages = ["src/matplotlib_window_tracker"]
 
 [tool.hatch.build.targets.sdist]
 ignore-vcs = true
 only-include = [
-  "src/mpl_nonblock",
+  "src/matplotlib_window_tracker",
   "pyproject.toml",
   "README.md",
   "LICENSE",

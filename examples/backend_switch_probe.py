@@ -135,7 +135,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.hold:
         try:
-            from mpl_nonblock import hold_windows
+            from matplotlib_window_tracker import hold_windows
 
             hold_windows(prompt="Press Enter to exit...")
         except Exception:

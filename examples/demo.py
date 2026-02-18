@@ -6,14 +6,14 @@ from datetime import datetime
 
 import matplotlib.pyplot as plt
 
-from mpl_nonblock import hold_windows, is_interactive
+from matplotlib_window_tracker import hold_windows, is_interactive
 
 
 def main() -> None:
     # Backend selection is intentionally explicit. If needed, do this before pyplot:
     #
     #   import matplotlib
-    #   from mpl_nonblock import recommended_backend
+    #   from matplotlib_window_tracker import recommended_backend
     #   matplotlib.use(recommended_backend(), force=True)
 
     fig1, ax1 = plt.subplots(num="Example: A", clear=True, figsize=(8, 4))

@@ -57,7 +57,7 @@ class _FakeFig:
 def test_track_position_size_restores_and_saves(
     monkeypatch: Any, tmp_path: Path
 ) -> None:
-    from mpl_nonblock import geometry_cache
+    from matplotlib_window_tracker import geometry_cache
 
     mgr = _FakeManager()
     fig = _FakeFig(mgr)
@@ -102,7 +102,7 @@ def test_track_position_size_restores_and_saves(
 
 
 def test_track_position_size_returns_none_when_missing_methods(tmp_path: Path) -> None:
-    from mpl_nonblock import geometry_cache
+    from matplotlib_window_tracker import geometry_cache
 
     class BadManager:
         pass

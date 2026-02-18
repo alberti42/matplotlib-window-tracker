@@ -33,7 +33,7 @@ def recommended_backend(
 
     ```python
     import matplotlib
-    from mpl_nonblock import recommended_backend
+    from matplotlib_window_tracker import recommended_backend
 
     matplotlib.use(recommended_backend(respect_existing=True), force=True)
     import matplotlib.pyplot as plt
@@ -47,7 +47,7 @@ def recommended_backend(
     except Exception as e:
         _warn_once(
             "recommended_backend:get_backend",
-            "mpl_nonblock.recommended_backend: matplotlib.get_backend() failed; using platform default",
+            "matplotlib_window_tracker.recommended_backend: matplotlib.get_backend() failed; using platform default",
             e,
         )
         current = ""

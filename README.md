@@ -1,6 +1,6 @@
-# mpl-nonblock
+# matplotlib-window-tracker
 
-This package, `mpl-nonblock`, is designed for scientists and anyone who prefers a
+This package, `matplotlib-window-tracker`, is designed for scientists and anyone who prefers a
 script-based workflow (plain `.py` files) with IPython.
 
 It solves two simple, practical annoyances that show up as soon as your code
@@ -42,7 +42,7 @@ hidden state over time.
 One nice side-effect of this workflow: you can run a script that generates figures,
 then keep working in the same IPython session (inspect results, tweak parameters,
 generate more figures) while the generated figures stay visible. In contrast,
-without `mpl-nonblock`, if you ran the same script from the terminal in a
+without `matplotlib-window-tracker`, if you ran the same script from the terminal in a
 noninteractive Python session, you would lose the ability to inspect the generated
 figures after the program exited at the end.
 
@@ -72,13 +72,13 @@ Using `uv` (recommended):
 <summary>Show command</summary>
 
 ```bash
-uv pip install "mpl-nonblock @ git+https://github.com/alberti42/mpl-nonblock.git"
+uv pip install "matplotlib-window-tracker @ git+https://github.com/alberti42/matplotlib-window-tracker.git"
 ```
 
 Pin a specific version (recommended to avoid future breaking changes):
 
 ```bash
-uv pip install "mpl-nonblock @ git+https://github.com/alberti42/mpl-nonblock.git@v1.2.0"
+uv pip install "matplotlib-window-tracker @ git+https://github.com/alberti42/matplotlib-window-tracker.git@v1.2.1"
 ```
 
 </details>
@@ -89,7 +89,7 @@ Using `pip`:
 <summary>Show command</summary>
 
 ```bash
-pip install "mpl-nonblock @ git+https://github.com/alberti42/mpl-nonblock.git"
+pip install "matplotlib-window-tracker @ git+https://github.com/alberti42/matplotlib-window-tracker.git"
 ```
 
 </details>
@@ -100,7 +100,7 @@ Optional (Qt convenience; installs PySide6):
 <summary>Show command</summary>
 
 ```bash
-pip install "mpl-nonblock[qt]"
+pip install "matplotlib-window-tracker[qt]"
 ```
 
 This installs the optional Qt dependency (`PySide6`).
@@ -119,7 +119,7 @@ import time
 
 import matplotlib.pyplot as plt
 
-from mpl_nonblock import is_interactive
+from matplotlib_window_tracker import is_interactive
 
 
 def main() -> None:
@@ -128,7 +128,7 @@ def main() -> None:
 
     # macOS: persist window position+size across runs.
     # (Silent no-op on unsupported backends / Matplotlib builds.)
-    from mpl_nonblock import track_position_size
+    from matplotlib_window_tracker import track_position_size
 
     track_position_size(fig1, tag="window_a")
     track_position_size(fig2, tag="window_b")
@@ -158,7 +158,7 @@ def main() -> None:
         #       input("Press Enter to exit...")
         #
         # Robust: keep the GUI responsive while waiting.
-        from mpl_nonblock import hold_windows
+        from matplotlib_window_tracker import hold_windows
 
         # Default: exit on any key (prints a default prompt).
         # If you prefer Enter, use: hold_windows(trigger="Enter")
@@ -217,8 +217,8 @@ This restores the cached position+size (if present for this machine and tag) and
 saves updates on `window_move_end_event` / `window_resize_end_event`.
 
 Cache location:
-- default: `.mpl-nonblock/window_geometry.json` in your project directory
-- override: set `MPL_NONBLOCK_CACHE_DIR`
+- default: `.matplotlib-window-tracker/window_geometry.json` in your project directory
+- override: set `MATPLOTLIB_WINDOW_TRACKER_CACHE_DIR`
 
 Demo:
 
@@ -238,7 +238,7 @@ before importing `matplotlib.pyplot`:
 
 ```python
 import matplotlib
-from mpl_nonblock import recommended_backend
+from matplotlib_window_tracker import recommended_backend
 
 # `respect_existing=True` means "if something already selected a backend in this session
 # (e.g. via `%matplotlib` / environment variable `MPLBACKEND`), keep using it".
@@ -311,7 +311,7 @@ Recommended practice:
 
 ## API Overview
 
-Import name is `mpl_nonblock`:
+Import name is `matplotlib_window_tracker`:
 
  - `recommended_backend(macos="macosx", linux="TkAgg", windows="TkAgg", other="TkAgg", respect_existing=True)`
     - Returns a backend name recommendation for your platform.
@@ -325,7 +325,7 @@ Import name is `mpl_nonblock`:
   - `track_position_size(fig, *, tag, restore_from_cache=True, cache_dir=None) -> WindowTracker | None`
     - macOS: restore and track a figure window's position+size.
     - Uses `tag` as an explicit cache key (no fallback keys).
-    - Restores once from `.mpl-nonblock/window_geometry.json` and saves on
+    - Restores once from `.matplotlib-window-tracker/window_geometry.json` and saves on
       `window_move_end_event` / `window_resize_end_event`.
     - Returns a `WindowTracker` handle (or None on unsupported backends).
 
@@ -365,7 +365,7 @@ The `[test]` extra installs test-only dependencies (currently `pytest`).
 If you installed from PyPI and want to run tests locally:
 
 ```bash
-python -m pip install "mpl-nonblock[test]"
+python -m pip install "matplotlib-window-tracker[test]"
 python -m pytest
 ```
 

@@ -38,7 +38,7 @@ def main() -> None:
 
     # Optional terminal-run convenience: wait until a key is pressed.
     try:
-        from mpl_nonblock import hold_windows
+        from matplotlib_window_tracker import hold_windows
 
         hold_windows()
     except Exception:

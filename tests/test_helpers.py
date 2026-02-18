@@ -6,7 +6,7 @@ from typing import Any
 def test_in_ipython_respects_builtins___IPYTHON___flag(monkeypatch: Any) -> None:
     import builtins
 
-    from mpl_nonblock import _helpers
+    from matplotlib_window_tracker import _helpers
 
     monkeypatch.setattr(builtins, "__IPYTHON__", True, raising=False)
     _helpers._IN_IPYTHON = None

@@ -4,7 +4,7 @@ from typing import Any
 
 
 def test_recommended_backend_defaults(monkeypatch: Any) -> None:
-    from mpl_nonblock import recommended_backend
+    from matplotlib_window_tracker import recommended_backend
 
     monkeypatch.setattr(__import__("sys"), "platform", "darwin")
     assert recommended_backend(respect_existing=False) == "macosx"
@@ -25,7 +25,7 @@ def test_recommended_backend_respects_existing_backend_when_pyplot_imported(
     import matplotlib
     import sys
 
-    from mpl_nonblock import recommended_backend
+    from matplotlib_window_tracker import recommended_backend
 
     monkeypatch.setattr(matplotlib, "get_backend", lambda: "Inline")
     monkeypatch.setitem(sys.modules, "matplotlib.pyplot", object())
@@ -39,7 +39,7 @@ def test_recommended_backend_respects_mplbackend_env(monkeypatch: Any) -> None:
     import os
     import sys
 
-    from mpl_nonblock import recommended_backend
+    from matplotlib_window_tracker import recommended_backend
 
     monkeypatch.setattr(matplotlib, "get_backend", lambda: "Agg")
     monkeypatch.setenv("MPLBACKEND", "Agg")
@@ -49,7 +49,7 @@ def test_recommended_backend_respects_mplbackend_env(monkeypatch: Any) -> None:
 
 
 def test_recommended_backend_overrides(monkeypatch: Any) -> None:
-    from mpl_nonblock import recommended_backend
+    from matplotlib_window_tracker import recommended_backend
 
     monkeypatch.setattr(__import__("sys"), "platform", "darwin")
     assert recommended_backend(macos="X", respect_existing=False) == "X"
