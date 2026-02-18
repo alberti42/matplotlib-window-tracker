@@ -273,7 +273,29 @@ def _has_attrs(obj: Any, names: tuple[str, ...]) -> bool:
     return True
 
 
-def _mk_entry_from_manager(mgr: Any) -> dict[str, Any] | None:
+def _get_window_level_floating(mgr: Any) -> bool | None:
+    """Return the window always-on-top flag (macOS) if available.
+
+    Returns None when the manager does not expose `get_window_level()`.
+    """
+
+    get_level = getattr(mgr, "get_window_level", None)
+    if not callable(get_level):
+        return None
+    try:
+        v = get_level()
+    except Exception:
+        return None
+    if isinstance(v, bool):
+        return v
+    return None
+
+
+def _mk_entry_from_manager(
+    mgr: Any,
+    *,
+    window_level_floating: bool | None,
+) -> dict[str, Any] | None:
     """Build a cache entry dict by querying a Matplotlib manager.
 
     Requires upstream macOS manager APIs:
@@ -289,20 +311,29 @@ def _mk_entry_from_manager(mgr: Any) -> dict[str, Any] | None:
     except Exception:
         return None
 
-    return {
+    out: dict[str, Any] = {
         "frame": frame,
         "screen_id": screen_id,
         "screen_frame": screen_frame,
         "updated_at": _utc_now_iso(),
     }
 
+    # Prefer live value from the manager when available.
+    live_level = _get_window_level_floating(mgr)
+    if live_level is not None:
+        out["window_level_floating"] = live_level
+    elif window_level_floating is not None:
+        out["window_level_floating"] = bool(window_level_floating)
+
+    return out
+
 
 def _restore_from_cache(
     *, mgr: Any, tag: str, machine_id: str, path: Path
-) -> list[Any] | None:
+) -> tuple[list[Any], bool | None] | None:
     """Restore manager frame from cache.
 
-    Returns the applied frame [x, y, w, h] when a cache hit exists for
+    Returns (applied_frame, window_level_floating) when a cache hit exists for
     (tag, machine_id), otherwise None.
     """
 
@@ -316,7 +347,22 @@ def _restore_from_cache(
             return None
         x, y, w, h = frame
         mgr.set_window_frame(x, y, w, h)
-        return [x, y, w, h]
+
+        floating: bool | None = None
+        try:
+            v = entry.get("window_level_floating")
+            if isinstance(v, bool):
+                floating = v
+        except Exception:
+            floating = None
+
+        if floating is not None and hasattr(mgr, "set_window_level"):
+            try:
+                mgr.set_window_level(floating)
+            except Exception:
+                pass
+
+        return [x, y, w, h], floating
     except Exception:
         return None
 
@@ -336,7 +382,8 @@ class WindowTracker:
     _fig_ref: weakref.ReferenceType[Any]
     _mgr_ref: weakref.ReferenceType[Any]
     _cids: tuple[int, int]
-    _last_saved_fp: tuple[Any, Any, Any] | None
+    _last_saved_fp: tuple[Any, Any, Any, Any] | None
+    _window_level_floating: bool | None
 
     def disconnect(self) -> None:
         """Disconnect the installed Matplotlib callbacks (best-effort)."""
@@ -354,7 +401,10 @@ class WindowTracker:
         mgr = self._mgr_ref()
         if mgr is None:
             return False
-        entry = _mk_entry_from_manager(mgr)
+        entry = _mk_entry_from_manager(
+            mgr,
+            window_level_floating=self._window_level_floating,
+        )
         if entry is None:
             return False
 
@@ -371,6 +421,17 @@ class WindowTracker:
         )
         if wrote:
             object.__setattr__(self, "_last_saved_fp", fp)
+            try:
+                if "window_level_floating" in entry and isinstance(
+                    entry["window_level_floating"], bool
+                ):
+                    object.__setattr__(
+                        self,
+                        "_window_level_floating",
+                        entry["window_level_floating"],
+                    )
+            except Exception:
+                pass
         return wrote
 
     def save_now(self) -> None:
@@ -423,7 +484,7 @@ class WindowTracker:
         self._save_from_mgr(force=False)
 
     def restore_position_and_size(self) -> None:
-        """Restore the window frame from cache (best-effort)."""
+        """Restore the window frame (and level flag if available) from cache."""
 
         mgr = self._mgr_ref()
         if mgr is None:
@@ -435,9 +496,39 @@ class WindowTracker:
             path=self.cache_path,
         )
         if restored is not None:
-            entry = _mk_entry_from_manager(mgr)
+            _frame, floating = restored
+            object.__setattr__(self, "_window_level_floating", floating)
+            entry = _mk_entry_from_manager(
+                mgr,
+                window_level_floating=floating,
+            )
             if entry is not None:
                 object.__setattr__(self, "_last_saved_fp", _entry_fingerprint(entry))
+
+    def set_window_level(self, *, floating: bool) -> None:
+        """Set always-on-top behavior (macOS only) and persist it.
+
+        When supported, `floating=True` requests an always-on-top window
+        (NSFloatingWindowLevel). `floating=False` restores normal behavior.
+        """
+
+        mgr = self._mgr_ref()
+        if mgr is None:
+            return
+        if not hasattr(mgr, "set_window_level"):
+            return
+        try:
+            mgr.set_window_level(bool(floating))
+        except Exception:
+            return
+
+        object.__setattr__(self, "_window_level_floating", bool(floating))
+        self._save_from_mgr(force=False)
+
+    def set_always_on_top(self, *, always_on_top: bool = True) -> None:
+        """Convenience alias for `set_window_level(floating=...)`."""
+
+        self.set_window_level(floating=always_on_top)
 
 
 def track_position_size(
@@ -498,11 +589,16 @@ def track_position_size(
     path = _cache_file_path(cache_dir)
     mid = _machine_id()
 
-    last_saved_fp: tuple[Any, Any, Any] | None = None
+    last_saved_fp: tuple[Any, Any, Any, Any] | None = None
+    window_level_floating: bool | None = None
     if restore_from_cache:
         restored = _restore_from_cache(mgr=mgr, tag=tag, machine_id=mid, path=path)
         if restored is not None:
-            entry = _mk_entry_from_manager(mgr)
+            _frame, window_level_floating = restored
+            entry = _mk_entry_from_manager(
+                mgr,
+                window_level_floating=window_level_floating,
+            )
             if entry is not None:
                 last_saved_fp = _entry_fingerprint(entry)
 
@@ -513,7 +609,10 @@ def track_position_size(
         m = wmgr()
         if m is None:
             return
-        entry = _mk_entry_from_manager(m)
+        entry = _mk_entry_from_manager(
+            m,
+            window_level_floating=window_level_floating,
+        )
         if entry is None:
             return
         fp = _entry_fingerprint(entry)
@@ -545,6 +644,7 @@ def track_position_size(
         _mgr_ref=wmgr,
         _cids=(int(cid_move), int(cid_resize)),
         _last_saved_fp=last_saved_fp,
+        _window_level_floating=window_level_floating,
     )
 
 
@@ -558,7 +658,7 @@ def _load_cache(path: Path) -> dict[str, Any]:
     return _coerce_cache(data)
 
 
-def _entry_fingerprint(entry: dict[str, Any]) -> tuple[Any, Any, Any]:
+def _entry_fingerprint(entry: dict[str, Any]) -> tuple[Any, Any, Any, Any]:
     """Return a stable fingerprint used to detect meaningful changes.
 
     The fingerprint includes only fields that should trigger a disk write.
@@ -568,6 +668,7 @@ def _entry_fingerprint(entry: dict[str, Any]) -> tuple[Any, Any, Any]:
         entry.get("frame"),
         entry.get("screen_id"),
         entry.get("screen_frame"),
+        entry.get("window_level_floating"),
     )
 
 

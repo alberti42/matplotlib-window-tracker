@@ -115,6 +115,7 @@ Small handle returned by `track_position_size`.
 - `save_now()`: save current geometry if changed.
 - `set_frame(x, y, w, h)`, `set_position(x, y)`, `set_size(w, h)`: deterministic
   manual operations (they also save).
+- `set_window_level(floating=True/False)`: macOS-only always-on-top toggle (also saved).
 - `restore_position_and_size()`: re-apply cached geometry.
 
 ### `is_interactive()`

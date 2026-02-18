@@ -13,6 +13,7 @@ class _FakeManager:
         self._callbacks: dict[int, Callable[..., Any]] = {}
         self._events: dict[str, list[int]] = {}
         self.disconnected: list[int] = []
+        self.window_level_floating: bool | None = None
 
     def get_window_frame(self):
         return list(self._frame)
@@ -36,6 +37,12 @@ class _FakeManager:
     def mpl_disconnect(self, cid: int) -> None:
         self.disconnected.append(cid)
         self._callbacks.pop(cid, None)
+
+    def set_window_level(self, floating: bool) -> None:
+        self.window_level_floating = bool(floating)
+
+    def get_window_level(self) -> bool:
+        return bool(self.window_level_floating)
 
     def trigger(self, event: str) -> None:
         for cid in list(self._events.get(event, [])):
@@ -80,12 +87,14 @@ def test_track_position_size_restores_and_saves(
             "frame": [11, 22, 333, 444],
             "screen_id": 1,
             "screen_frame": [0, 0, 1920, 1080],
+            "window_level_floating": True,
         },
     )
 
     tracker = geometry_cache.track_position_size(fig, tag="winA")
     assert tracker is not None
     assert mgr.get_window_frame() == [11, 22, 333, 444]
+    assert mgr.window_level_floating is True
 
     # Move window and trigger end-event -> should save new frame.
     mgr.set_window_frame(1, 2, 3, 4)
@@ -99,6 +108,12 @@ def test_track_position_size_restores_and_saves(
     # Disconnect should call mpl_disconnect for both cids.
     tracker.disconnect()
     assert len(mgr.disconnected) == 2
+
+    tracker.set_window_level(floating=False)
+    cache = geometry_cache._load_cache(p)
+    entry = geometry_cache._get_entry(cache, tag="winA", machine_id=mid)
+    assert entry is not None
+    assert entry.get("window_level_floating") is False
 
 
 def test_track_position_size_returns_none_when_missing_methods(tmp_path: Path) -> None:

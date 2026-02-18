@@ -37,6 +37,7 @@ def test_set_entry_creates_expected_structure() -> None:
         "frame": [1, 2, 3, 4],
         "screen_id": 123,
         "screen_frame": [0, 0, 100, 100],
+        "window_level_floating": True,
         "updated_at": "2026-02-18T00:00:00+00:00",
     }
     geometry_cache._set_entry(cache, tag=tag, machine_id=machine_id, entry=entry)

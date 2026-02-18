@@ -329,6 +329,9 @@ Import name is `matplotlib_window_tracker`:
       `window_move_end_event` / `window_resize_end_event`.
     - Returns a `WindowTracker` handle (or None on unsupported backends).
 
+    `WindowTracker` also supports persisting the always-on-top flag (macOS-only):
+    `tracker.set_window_level(floating=True)`.
+
  - `is_interactive()`
   - Returns `True` when running inside IPython/Jupyter or a REPL-ish session
     (checks for IPython, `sys.ps1`, and `sys.flags.interactive`).
