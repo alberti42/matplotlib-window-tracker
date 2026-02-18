@@ -1,7 +1,7 @@
 PY ?= python3
 ARGS ?=
 
-.PHONY: help demo mwe hold recommend subplots backend-probe high-fps
+.PHONY: help demo mwe hold recommend subplots backend-probe high-fps geom-cache
 
 help:  ## List available example targets
 	@printf "%s\n" \
@@ -13,6 +13,7 @@ help:  ## List available example targets
 	"  subplots      - visual subplots(num=..., clear=...) reuse test" \
 	"  backend-probe - backend switching probe (use ARGS=...)" \
 	"  high-fps      - high FPS two-window demo (line.set_ydata + plt.pause)" \
+	"  geom-cache    - persist window position+size across runs (macosx)" \
 	"" \
 	"Examples:" \
 	"  make backend-probe ARGS='--make-figure --switch svg --switch-back macosx --hold'"
@@ -37,3 +38,6 @@ backend-probe:  ## backend switching probe (ARGS=...)
 
 high-fps:  ## high FPS two-window demo
 	$(PY) examples/high_fps_two_windows.py $(ARGS)
+
+geom-cache:  ## persist window position+size across runs (macosx)
+	$(PY) examples/window_geometry_cache_demo.py
