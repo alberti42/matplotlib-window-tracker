@@ -25,6 +25,14 @@ __all__ = [
 
 
 def _machine_id() -> str:
+    """Return a machine identifier string used to separate cache entries.
+
+    Implementation:
+    - Uses `uuid.getnode()` which is typically the MAC address (48-bit int).
+    - On some systems it may be a random value; that is still acceptable for the
+      purpose of separating cache entries across machines.
+    """
+
     # uuid.getnode() is usually the MAC address (48-bit int). It may be random on
     # some systems; that is still acceptable as a stable-ish machine identifier.
     try:
@@ -34,6 +42,8 @@ def _machine_id() -> str:
 
 
 def _hostname() -> str:
+    """Return the host name (best-effort, for human-readable cache metadata)."""
+
     try:
         return platform.node()
     except Exception:
@@ -41,10 +51,14 @@ def _hostname() -> str:
 
 
 def _utc_now_iso() -> str:
+    """Return current UTC timestamp in ISO 8601 format."""
+
     return datetime.now(timezone.utc).isoformat()
 
 
 def _new_cache() -> dict[str, Any]:
+    """Return an empty, valid v1 cache object."""
+
     return {
         "version": _CACHE_VERSION,
         "machines": {},
@@ -53,7 +67,12 @@ def _new_cache() -> dict[str, Any]:
 
 
 def _coerce_cache(data: Any) -> dict[str, Any]:
-    """Best-effort: coerce arbitrary data into the expected cache schema."""
+    """Best-effort: coerce arbitrary data into the expected cache schema.
+
+    This function never raises.
+    - If the input is not a valid v1 cache mapping, it returns an empty cache.
+    - Unknown versions are treated as empty (no migration in MVP).
+    """
 
     if not isinstance(data, dict):
         return _new_cache()
@@ -77,6 +96,8 @@ def _coerce_cache(data: Any) -> dict[str, Any]:
 
 
 def _get_machine_entry(cache: dict[str, Any], machine_id: str) -> dict[str, Any] | None:
+    """Return cache['machines'][machine_id] if present and well-formed."""
+
     try:
         machines = cache.get("machines")
         if not isinstance(machines, dict):
@@ -90,6 +111,8 @@ def _get_machine_entry(cache: dict[str, Any], machine_id: str) -> dict[str, Any]
 
 
 def _ensure_machine_record(cache: dict[str, Any], machine_id: str) -> None:
+    """Ensure a machine metadata record exists for `machine_id` (in-place)."""
+
     try:
         machines = cache.setdefault("machines", {})
         if not isinstance(machines, dict):
@@ -107,7 +130,11 @@ def _ensure_machine_record(cache: dict[str, Any], machine_id: str) -> None:
 def _get_entry(
     cache: dict[str, Any], *, tag: str, machine_id: str
 ) -> dict[str, Any] | None:
-    """Return the cached entry for (tag, machine_id), or None."""
+    """Return the cached geometry entry for (tag, machine_id), or None.
+
+    Entries are machine-specific so that shared cache directories can contain
+    per-machine window geometry.
+    """
 
     if not isinstance(tag, str) or not tag:
         return None
@@ -134,7 +161,11 @@ def _set_entry(
     machine_id: str,
     entry: dict[str, Any],
 ) -> None:
-    """Set the cached entry for (tag, machine_id) (in-place)."""
+    """Set the cached entry for (tag, machine_id) (in-place).
+
+    This creates intermediate dicts as needed and also ensures a machine record
+    exists in cache['machines'].
+    """
 
     if not isinstance(tag, str) or not tag:
         return
@@ -167,6 +198,9 @@ def _resolve_cache_dir(cache_dir: str | os.PathLike[str] | None) -> Path:
        - otherwise: current working directory
 
     The returned path includes the `.mpl-nonblock` subdirectory.
+
+    This function never raises. If it cannot determine a script directory, it
+    falls back to the current working directory.
     """
 
     if cache_dir is not None:
@@ -201,10 +235,14 @@ def _resolve_cache_dir(cache_dir: str | os.PathLike[str] | None) -> Path:
 
 
 def _cache_file_path(cache_dir: str | os.PathLike[str] | None) -> Path:
+    """Return the full path to the cache JSON file."""
+
     return _resolve_cache_dir(cache_dir) / "window_geometry.json"
 
 
 def _ensure_parent_dir(path: Path) -> None:
+    """Create the parent directory for `path` (best-effort)."""
+
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
     except Exception:
@@ -212,6 +250,11 @@ def _ensure_parent_dir(path: Path) -> None:
 
 
 def _read_json(path: Path) -> dict[str, Any] | None:
+    """Read a JSON mapping from disk.
+
+    Returns None on any failure (missing file, parse error, permission error).
+    """
+
     try:
         import json
 
@@ -222,6 +265,8 @@ def _read_json(path: Path) -> dict[str, Any] | None:
 
 
 def _has_attrs(obj: Any, names: tuple[str, ...]) -> bool:
+    """Return True if `obj` has all named attributes."""
+
     for n in names:
         if not hasattr(obj, n):
             return False
@@ -229,6 +274,14 @@ def _has_attrs(obj: Any, names: tuple[str, ...]) -> bool:
 
 
 def _mk_entry_from_manager(mgr: Any) -> dict[str, Any] | None:
+    """Build a cache entry dict by querying a Matplotlib manager.
+
+    Requires upstream macOS manager APIs:
+    - get_window_frame
+    - get_window_screen_id
+    - get_screen_frame
+    """
+
     try:
         frame = list(mgr.get_window_frame())
         screen_id = mgr.get_window_screen_id()
@@ -247,7 +300,11 @@ def _mk_entry_from_manager(mgr: Any) -> dict[str, Any] | None:
 def _restore_from_cache(
     *, mgr: Any, tag: str, machine_id: str, path: Path
 ) -> list[Any] | None:
-    """Restore manager frame from cache. Returns restored frame or None."""
+    """Restore manager frame from cache.
+
+    Returns the applied frame [x, y, w, h] when a cache hit exists for
+    (tag, machine_id), otherwise None.
+    """
 
     try:
         cache = _load_cache(path)
@@ -282,6 +339,8 @@ class WindowTracker:
     _last_saved_fp: tuple[Any, Any, Any] | None
 
     def disconnect(self) -> None:
+        """Disconnect the installed Matplotlib callbacks (best-effort)."""
+
         mgr = self._mgr_ref()
         if mgr is None:
             return
@@ -315,9 +374,13 @@ class WindowTracker:
         return wrote
 
     def save_now(self) -> None:
+        """Persist the current window frame to disk if it changed."""
+
         self._save_from_mgr(force=False)
 
     def set_frame(self, x: float, y: float, w: float, h: float) -> None:
+        """Set the window frame and persist it (best-effort)."""
+
         mgr = self._mgr_ref()
         if mgr is None:
             return
@@ -328,6 +391,8 @@ class WindowTracker:
         self._save_from_mgr(force=False)
 
     def set_position(self, x: float, y: float) -> None:
+        """Set window position (x, y), preserve size, and persist (best-effort)."""
+
         mgr = self._mgr_ref()
         if mgr is None:
             return
@@ -342,6 +407,8 @@ class WindowTracker:
         self._save_from_mgr(force=False)
 
     def set_size(self, w: float, h: float) -> None:
+        """Set window size (w, h), preserve position, and persist (best-effort)."""
+
         mgr = self._mgr_ref()
         if mgr is None:
             return
@@ -356,6 +423,8 @@ class WindowTracker:
         self._save_from_mgr(force=False)
 
     def restore_position_and_size(self) -> None:
+        """Restore the window frame from cache (best-effort)."""
+
         mgr = self._mgr_ref()
         if mgr is None:
             return
@@ -380,12 +449,31 @@ def track_position_size(
 ) -> WindowTracker | None:
     """Track and persist a window's position+size (macOS backend only).
 
-    - `tag` is mandatory and is used as the cache key.
-    - If `restore_from_cache=True` and a cached frame exists for this machine,
-      it is applied immediately.
-    - On move/resize end events, the final window frame is persisted.
+    Intended usage pattern:
 
-    On unsupported backends / missing APIs, this returns None and does nothing.
+    - You create one or more figures.
+    - For each window you want to persist across runs, call:
+      `track_position_size(fig, tag="your_tag")`.
+    - Then show the windows using Matplotlib (e.g. `plt.show(block=False)`).
+
+    Contract:
+    - `tag` is mandatory and is the cache key. There are no fallback keys.
+    - If `restore_from_cache=True` and a cache entry exists for the current
+      machine, the window frame is restored immediately via `set_window_frame`.
+    - The function subscribes to `window_move_end_event` and
+      `window_resize_end_event`. When either fires, it saves the full window
+      frame to disk (position + size), but only if it changed.
+    - On unsupported backends or Matplotlib builds without the required macOS
+      manager APIs, the function is a silent no-op and returns None.
+
+    Parameters:
+    - fig: Matplotlib figure.
+    - tag: explicit cache key for this window.
+    - restore_from_cache: if True (default), restore a cached frame before
+      subscribing to events.
+    - cache_dir: optional override for the cache root directory.
+      If omitted, `MPL_NONBLOCK_CACHE_DIR` may be used; otherwise a default
+      location is chosen.
     """
 
     if not isinstance(tag, str) or not tag:
@@ -471,7 +559,10 @@ def _load_cache(path: Path) -> dict[str, Any]:
 
 
 def _entry_fingerprint(entry: dict[str, Any]) -> tuple[Any, Any, Any]:
-    """Return a stable fingerprint used to detect changes."""
+    """Return a stable fingerprint used to detect meaningful changes.
+
+    The fingerprint includes only fields that should trigger a disk write.
+    """
 
     return (
         entry.get("frame"),
@@ -481,7 +572,11 @@ def _entry_fingerprint(entry: dict[str, Any]) -> tuple[Any, Any, Any]:
 
 
 def _atomic_write_text(path: Path, text: str) -> None:
-    """Atomically write text to path (best-effort)."""
+    """Atomically write text to path (best-effort).
+
+    Implementation writes a temporary file in the same directory and uses
+    `os.replace` for an atomic swap on most filesystems.
+    """
 
     _ensure_parent_dir(path)
 
@@ -534,7 +629,14 @@ def _upsert_entry(
 ) -> bool:
     """Upsert a single (tag, machine_id) entry on disk.
 
-    Returns True if a write occurred, False otherwise.
+    Behavior:
+    - Loads existing cache (or starts from empty on failures).
+    - Updates cache['entries'][tag][machine_id] with the provided entry.
+    - Writes to disk atomically.
+    - If `skip_if_unchanged=True`, it skips the write when the stored fingerprint
+      matches the new fingerprint.
+
+    Returns True if a disk write occurred, False otherwise.
     Never raises.
     """
 

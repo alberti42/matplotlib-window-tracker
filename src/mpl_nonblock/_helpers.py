@@ -55,7 +55,10 @@ def _in_ipython() -> bool:
 def is_interactive() -> bool:
     """Return True in IPython/Jupyter or REPL-ish sessions.
 
-    This is used to decide whether to apply nonblocking display defaults.
+    This is a heuristic used to distinguish "script mode" from "interactive mode".
+
+    The library uses it to choose safe defaults for interactive workflows
+    (e.g. to decide whether a script should keep windows open at the end).
     """
 
     if _in_ipython():

@@ -23,13 +23,19 @@ def hold_windows(
 ) -> None:
     """Keep Matplotlib figures alive until the user continues.
 
-    This is a terminal-run convenience: at the end of a script that created
-    Matplotlib figures, prevent the Python process from exiting immediately while
-    keeping the GUI responsive.
+    This is intended for terminal-run scripts. It prevents the Python process
+    from exiting immediately after creating figures, while keeping the GUI
+    responsive by repeatedly pumping the Matplotlib event loop.
 
     The function returns when:
     - the user presses the configured key trigger, or
     - all figures are closed (no fignums remain).
+
+    Notes:
+    - The function is a best-effort convenience. It does not try to select a
+      backend or override Matplotlib configuration.
+    - It uses Matplotlib primitives (`plt.pause` / canvas.start_event_loop) to
+      keep windows responsive.
 
     Parameters:
     - poll: seconds to wait between GUI event processing steps.

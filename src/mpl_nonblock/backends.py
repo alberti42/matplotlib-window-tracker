@@ -28,6 +28,16 @@ def recommended_backend(
     If a backend already appears to be configured (e.g. via `%matplotlib ...`,
     `MPLBACKEND`, or importing `matplotlib.pyplot`), this returns the current backend
     when `respect_existing=True` (default).
+
+    Typical use:
+
+    ```python
+    import matplotlib
+    from mpl_nonblock import recommended_backend
+
+    matplotlib.use(recommended_backend(respect_existing=True), force=True)
+    import matplotlib.pyplot as plt
+    ```
     """
 
     import matplotlib
@@ -60,8 +70,12 @@ def recommended_backend(
 def raise_figure(fig: Any) -> None:
     """Best-effort: raise/focus a Matplotlib figure window.
 
-    Matplotlib does not expose a single portable "raise this window" API, so we
-    poke backend-specific manager/window objects when available.
+    Matplotlib does not expose a single portable "raise this window" API.
+    This helper pokes backend-specific manager/window objects when available.
+
+    This function is intentionally best-effort:
+    - It may do nothing on unsupported backends.
+    - It should not raise.
     """
 
     try:

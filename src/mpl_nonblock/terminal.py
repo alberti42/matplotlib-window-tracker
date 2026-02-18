@@ -17,7 +17,17 @@ def _make_enterkey_checker() -> tuple[
 ]:
     """Return (context_manager, checker, supported) for Enter detection.
 
-    Implementation uses a background thread blocked on sys.stdin.readline().
+    This is used by `mpl_nonblock.hold_windows()`.
+
+    Returns:
+    - context_manager: a context manager to be entered while polling. For Enter
+      it is a no-op.
+    - checker: a callable returning True once Enter has been received.
+    - supported: False when stdin/threading is unavailable.
+
+    Implementation:
+    - Starts a daemon thread blocked on `sys.stdin.readline()`.
+    - The checker returns `threading.Event.is_set`.
     """
 
     import threading
@@ -48,6 +58,15 @@ def _make_anykey_checker() -> tuple[
     contextlib.AbstractContextManager[None], Callable[[], bool], bool
 ]:
     """Return (context_manager, checker, supported) for 'any key' detection.
+
+    This is used by `mpl_nonblock.hold_windows()`.
+
+    Returns:
+    - context_manager: a context manager to be entered while polling. On POSIX
+      it temporarily sets stdin to cbreak mode and restores it on exit.
+    - checker: a callable returning True once a single key has been consumed.
+      The implementation reads one character/byte from stdin when available.
+    - supported: False when no suitable mechanism is available.
 
     The returned context manager exists to restore terminal settings on POSIX.
     """
