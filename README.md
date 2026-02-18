@@ -78,7 +78,7 @@ uv pip install "mpl-nonblock @ git+https://github.com/alberti42/mpl-nonblock.git
 Pin a specific version (recommended to avoid future breaking changes):
 
 ```bash
-uv pip install "mpl-nonblock @ git+https://github.com/alberti42/mpl-nonblock.git@v1.1.0"
+uv pip install "mpl-nonblock @ git+https://github.com/alberti42/mpl-nonblock.git@v1.2.0"
 ```
 
 </details>
