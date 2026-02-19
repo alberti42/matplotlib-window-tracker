@@ -48,6 +48,34 @@ jobs:
           python -m pip install -e ".[test]"
           MPLBACKEND=Agg python -m pytest
 
+      - name: Build agent docs bundle (README + SKILL)
+        shell: bash
+        run: |
+          set -euo pipefail
+          bundle_dir="${RUNNER_TEMP}/matplotlib-window-tracker"
+          rm -rf "${bundle_dir}"
+          mkdir -p "${bundle_dir}"
+          cp README.md "${bundle_dir}/README.md"
+          cp skills/matplotlib-window-tracker/SKILL.md "${bundle_dir}/SKILL.md"
+
+          python - <<'PY'
+          from __future__ import annotations
+
+          import os
+          import pathlib
+          import zipfile
+
+          bundle_dir = pathlib.Path(os.environ["RUNNER_TEMP"]) / "matplotlib-window-tracker"
+          zip_path = pathlib.Path("dist") / "matplotlib-window-tracker-agent-skill.zip"
+          zip_path.parent.mkdir(parents=True, exist_ok=True)
+
+          with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+              for p in bundle_dir.rglob("*"):
+                  if p.is_file():
+                      zf.write(p, arcname=str(p.relative_to(bundle_dir.parent)))
+          print(f"Wrote {zip_path}")
+          PY
+
       - name: Compute release changelog link
         id: changelog
         shell: bash
@@ -90,3 +118,4 @@ jobs:
           files: |
             dist/*.tar.gz
             dist/*.whl
+            dist/matplotlib-window-tracker-agent-skill.zip
