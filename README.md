@@ -59,6 +59,33 @@ On macOS, the `macosx` backend is built in and does not require extra installati
 - Best-effort focus helper (optional): `raise_window(fig)` attempts to bring a
   native figure window to the foreground on supported backends.
 
+## Demos
+
+Animated two-window demo with geometry persistence (`examples/animated_sine_demo.py`):
+
+```bash
+ipython3
+```
+
+```python
+%matplotlib macosx
+%run examples/animated_sine_demo.py
+```
+
+<p align="center">
+  <video src="https://github.com/user-attachments/assets/3693f597-52d2-4b92-838f-fb9b605bb91e" controls muted playsinline></video>
+</p>
+
+What you see in the video:
+
+- First run (no cache): two windows are created in stacked positions.
+- You move/resize them, close everything (e.g. `plt.close('all')`), then re-run.
+- Second run: both windows restore their previous position and size.
+
+Without this package, after closing the windows (or restarting IPython / running other scripts)
+the next run would typically create fresh windows at the backend's default placement (often
+perfectly overlapped), and you would have to manually move/resize them again.
+
 ## Requirements
 
 - Python >= 3.10
@@ -353,14 +380,6 @@ Import name is `matplotlib_window_tracker`:
      - Terminal-run fallback: keep windows open after a script ends, while keeping the GUI responsive.
      - Returns when the user presses any key (or Enter with `trigger="Enter"`) or when all figure windows are closed.
      - If `prompt` is omitted, a default prompt is printed based on `trigger`. Use `prompt=None` to print nothing.
-
-## Demos
-
-Two tagged windows (sin/cos) from a source checkout:
-
-```bash
-python examples/two_windows.py
-```
 
 ## Tests
 
