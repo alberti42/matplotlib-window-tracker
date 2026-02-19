@@ -35,6 +35,8 @@ def main(argv: list[str] | None = None) -> int:
     if sys.platform == "darwin":
         matplotlib.use("macosx")
 
+    matplotlib.rcParams['figure.raise_window']=False
+
     import matplotlib.pyplot as plt
 
     from matplotlib_window_tracker import (
@@ -44,11 +46,11 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     n = max(args.n, 10)
-    x = [i / (n - 1) for i in range(n)]
+    x = np.linspace(0.0, 1.0, n)
     omega = 2.0 * math.pi
 
     fig1, ax1 = plt.subplots(num="animated_sine: phase", clear=True, figsize=(8, 4))
-    (line1,) = ax1.plot(x, [0.0 for _ in x])
+    (line1,) = ax1.plot(x, np.zeros_like(x))
     ax1.set_ylim(-1.2, 1.2)
     ax1.grid(True, alpha=0.3)
     ax1.set_title("moving sine (phase)")
@@ -69,7 +71,7 @@ def main(argv: list[str] | None = None) -> int:
     )
 
     fig2, ax2 = plt.subplots(num="animated_sine: amplitude", clear=True, figsize=(8, 4))
-    (line2,) = ax2.plot(x, [0.0 for _ in x], color="tab:orange")
+    (line2,) = ax2.plot(x, np.zeros_like(x), color="tab:orange")
     ax2.set_ylim(-1.2, 1.2)
     ax2.grid(True, alpha=0.3)
     ax2.set_title("amplitude-modulated sine")
@@ -89,14 +91,17 @@ def main(argv: list[str] | None = None) -> int:
         },
     )
 
+    # Ensure native windows are created before we query/apply window geometry.
+    # In IPython (e.g. `%run`), managers can exist before the native windows are
+    # fully realized.
+    plt.show(block=False)
+    for _ in range(5):
+        plt.pause(0.01)
+
     # Showcase window geometry persistence (macOS-only): restore on startup (if cached)
     # and save new geometry when you finish moving/resizing.
     tracker1 = track_position_size(fig1, tag="animated_sine_phase")
     tracker2 = track_position_size(fig2, tag="animated_sine_amplitude")
-
-    # Demonstrate storing/restoring the always-on-top flag for the bottom window.
-    if tracker1 is not None:
-        tracker1.set_window_level(floating=True)
 
     def _has_cached_entry(cache_path, *, tag: str, machine_id: str) -> bool:
         try:
@@ -129,7 +134,15 @@ def main(argv: list[str] | None = None) -> int:
                 if mgr1 is None:
                     raise RuntimeError("no manager")
 
-                x, y, w, h = mgr1.get_window_frame()  # type: ignore[attr-defined]
+                # Wait a little for the native windows to become queryable.
+                for _ in range(20):
+                    try:
+                        x, y, w, h = mgr1.get_window_frame()  # type: ignore[attr-defined]
+                        break
+                    except Exception:
+                        plt.pause(0.01)
+                else:
+                    raise RuntimeError("window frame not available")
 
                 # Make it obvious there are two separate windows by stacking them
                 # with a small margin, and set a consistent initial size.
@@ -158,8 +171,18 @@ def main(argv: list[str] | None = None) -> int:
 
                 tracker1.set_frame(x, y, w0, h0)
                 tracker2.set_frame(x, y2, w0, h0)
+
+                tracker1.raise_window()
+                tracker2.raise_window()
+                
+                plt.pause(0.01)
             except Exception:
                 pass
+
+        # Demonstrate storing/restoring the always-on-top flag.
+        # Do this after any initial placement so it doesn't interfere with the
+        # "no cache" stacking demo.
+        tracker1.set_window_level(floating=True)
 
     target_fps = float(args.fps)
     dt = 1.0 / target_fps if target_fps > 0 else 0.0
@@ -167,11 +190,11 @@ def main(argv: list[str] | None = None) -> int:
 
     for k in range(max(args.frames, 1)):
         phase = 0.15 * k
-        line1.set_ydata([math.sin(omega * xi + phase) for xi in x])
+        line1.set_ydata(np.sin(omega * x + phase))
 
         # Amplitude oscillates between -1 and 1.
         amp = math.sin(0.05 * k)
-        line2.set_ydata([amp * math.sin(omega * xi) for xi in x])
+        line2.set_ydata(amp * np.sin(omega * x))
         ax2.set_title(f"amplitude-modulated sine (amp={amp:+.2f})")
         plt.pause(max(args.pause, 0.0))
 
@@ -181,7 +204,6 @@ def main(argv: list[str] | None = None) -> int:
             if next_t > now:
                 time.sleep(next_t - now)
 
-    plt.show(block=False)
     if not is_interactive():
         hold_windows()
     return 0
