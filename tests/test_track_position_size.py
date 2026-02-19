@@ -38,6 +38,10 @@ class _FakeManager:
         self.disconnected.append(cid)
         self._callbacks.pop(cid, None)
 
+    def raise_window(self) -> None:
+        # Used by WindowTracker.raise_window() convenience.
+        self._raised = True
+
     def set_window_level(self, floating: bool) -> None:
         self.window_level_floating = bool(floating)
 
@@ -114,6 +118,9 @@ def test_track_position_size_restores_and_saves(
     entry = geometry_cache._get_entry(cache, tag="winA", machine_id=mid)
     assert entry is not None
     assert entry.get("window_level_floating") is False
+
+    tracker.raise_window()
+    assert getattr(mgr, "_raised", False) is True
 
 
 def test_track_position_size_returns_none_when_missing_methods(tmp_path: Path) -> None:

@@ -397,6 +397,17 @@ class WindowTracker:
             except Exception:
                 continue
 
+    def raise_window(self) -> None:
+        """Best-effort: raise/focus this tracker's window."""
+
+        mgr = self._mgr_ref()
+        try:
+            raise_fn = getattr(mgr, "raise_window", None) if mgr is not None else None
+            if callable(raise_fn):
+                raise_fn()
+        except Exception:
+            return
+
     def _save_from_mgr(self, *, force: bool = False) -> bool:
         mgr = self._mgr_ref()
         if mgr is None:
@@ -580,6 +591,7 @@ def track_position_size(
         "set_window_frame",
         "get_window_screen_id",
         "get_screen_frame",
+        "raise_window",
         "mpl_connect",
         "mpl_disconnect",
     )

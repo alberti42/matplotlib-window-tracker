@@ -99,6 +99,7 @@ listed earlier.
 `WindowTracker` methods (quick list)
 
 - `disconnect()`: stop tracking by disconnecting the installed callbacks.
+- `raise_window()`: best-effort raise/focus the tracked window.
 - `save_now()`: persist current window geometry if it changed.
 - `set_frame(x, y, w, h)`: set window position+size and persist.
 - `set_position(x, y)`: move window (preserve size) and persist.
