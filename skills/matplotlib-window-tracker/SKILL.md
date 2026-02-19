@@ -84,6 +84,29 @@ the `macosx` backend.
 
 ## API Reference
 
+### Public API (quick list)
+
+Use this as a fast index; for details/examples, grep `README.md` by the section headers
+listed earlier.
+
+- `recommended_backend(...) -> str`: return a backend name suggestion without calling `matplotlib.use()`.
+- `raise_window(fig) -> None`: best-effort raise/focus a native Matplotlib window.
+- `track_position_size(fig, *, tag, restore_from_cache=True, cache_dir=None) -> WindowTracker | None`: macOS-only window geometry persistence keyed by explicit `tag=`.
+- `hold_windows(...) -> None`: keep terminal-run scripts alive while GUI stays responsive.
+- `is_interactive() -> bool`: detect IPython/REPL-ish sessions.
+- `WindowTracker`: handle returned by `track_position_size` (disconnect + deterministic manual ops).
+
+`WindowTracker` methods (quick list)
+
+- `disconnect()`: stop tracking by disconnecting the installed callbacks.
+- `save_now()`: persist current window geometry if it changed.
+- `set_frame(x, y, w, h)`: set window position+size and persist.
+- `set_position(x, y)`: move window (preserve size) and persist.
+- `set_size(w, h)`: resize window (preserve position) and persist.
+- `restore_position_and_size()`: re-apply cached geometry for this tag.
+- `set_window_level(floating=True/False)`: macOS-only always-on-top toggle (persisted).
+- `set_always_on_top(always_on_top=True)`: convenience alias for `set_window_level`.
+
 ### `recommended_backend(macos="macosx", linux="TkAgg", windows="TkAgg", other="TkAgg", respect_existing=True) -> str`
 
 Returns a backend name recommendation for `sys.platform`.
