@@ -107,6 +107,19 @@ This installs the optional Qt dependency (`PySide6`).
 
 </details>
 
+## Agent skill bundle
+
+Each GitHub Release includes an optional agent-skill zip:
+
+- `matplotlib-window-tracker-agent-skill.zip`
+
+This bundle contains `README.md` + `SKILL.md` and is meant to be installed into your
+agent's skills directory (OpenCode, Codex, Claude Code, etc.).
+
+What the skill is for:
+- scaffolding a new Matplotlib script that uses this package correctly
+- upgrading an existing Matplotlib script to persist window geometry and use `hold_windows()`
+
 ## Quickstart
 
 This package is meant for running plotting code from scripts (files), and then
