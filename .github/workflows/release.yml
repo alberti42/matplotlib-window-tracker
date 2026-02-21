@@ -115,6 +115,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           body_path: ${{ steps.changelog.outputs.body_path }}
+          make_latest: true
+          draft: true
+          prerelease: false
           files: |
             dist/*.tar.gz
             dist/*.whl
