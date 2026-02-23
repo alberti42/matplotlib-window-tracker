@@ -178,7 +178,7 @@ def main(argv: list[str] | None = None) -> int:
         # Demonstrate storing/restoring the always-on-top flag.
         # Do this after any initial placement so it doesn't interfere with the
         # "no cache" stacking demo.
-        tracker1.set_window_level(floating=True)
+        tracker1.set_window_level(floating=False)
 
         # Bring the windows to the foreground once at startup.
         # Note: only one window can be the key/frontmost window at a time; the
@@ -200,6 +200,14 @@ def main(argv: list[str] | None = None) -> int:
         amp = math.sin(0.05 * k)
         line2.set_ydata([amp * math.sin(v) for v in omega_x])
         ax2.set_title(f"amplitude-modulated sine (amp={amp:+.2f})")
+
+        # Explicitly draw both canvases before pumping the event loop.
+        # plt.pause() only calls draw_idle() on the active figure, so with Qt
+        # the inactive window's paint event can be starved within the short
+        # pause interval.  Calling draw() synchronously on each canvas ensures
+        # both figures are rendered every frame regardless of focus.
+        fig1.canvas.draw()
+        fig2.canvas.draw()
         plt.pause(max(args.pause, 0.0))
 
         if dt > 0.0:

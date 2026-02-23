@@ -45,6 +45,12 @@ def main() -> None:
             ax1.set_title(f"A  frame={k}  [{stamp}]")
             ax2.set_title(f"B  frame={k}  [{stamp}]")
 
+        # Draw both canvases synchronously before pumping the event loop so
+        # Qt backends render both windows every frame (plt.pause only calls
+        # draw_idle on the active figure; the other window can be starved).
+        fig1.canvas.draw()
+        fig2.canvas.draw()
+
         # Matplotlib-native event pump.
         plt.pause(0.001)
 

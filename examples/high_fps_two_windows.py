@@ -54,6 +54,12 @@ def main(argv: list[str] | None = None) -> int:
         line1.set_ydata([math.sin(omega * xi + phase) for xi in x])
         line2.set_ydata([math.cos(omega * xi + phase) for xi in x])
 
+        # Draw both canvases synchronously before pumping the event loop so
+        # Qt backends render both windows every frame (plt.pause only calls
+        # draw_idle on the active figure; the other window can be starved).
+        fig1.canvas.draw()
+        fig2.canvas.draw()
+
         # Event pump.
         plt.pause(max(args.pause, 0.0))
 
