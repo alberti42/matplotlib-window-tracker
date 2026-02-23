@@ -35,7 +35,6 @@ def test_set_entry_creates_expected_structure() -> None:
 
     entry = {
         "frame": [1, 2, 3, 4],
-        "screen_id": 123,
         "window_level_floating": True,
         "updated_at": "2026-02-18T00:00:00+00:00",
     }

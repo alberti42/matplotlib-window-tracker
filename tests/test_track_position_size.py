@@ -7,7 +7,6 @@ from typing import Any, Callable
 class _FakeManager:
     def __init__(self) -> None:
         self._frame = [0, 0, 100, 100]
-        self._screen_id = 1
         self._next_cid = 1
         self._callbacks: dict[int, Callable[..., Any]] = {}
         self._events: dict[str, list[int]] = {}
@@ -19,9 +18,6 @@ class _FakeManager:
 
     def set_window_frame(self, x: Any, y: Any, w: Any, h: Any) -> None:
         self._frame = [x, y, w, h]
-
-    def get_window_screen_id(self):
-        return self._screen_id
 
     def mpl_connect(self, event: str, cb: Callable[..., Any]) -> int:
         cid = self._next_cid
@@ -85,7 +81,6 @@ def test_track_position_size_restores_and_saves(
         machine_id=mid,
         entry={
             "frame": [11, 22, 333, 444],
-            "screen_id": 1,
             "window_level_floating": True,
         },
     )
