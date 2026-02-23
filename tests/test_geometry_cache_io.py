@@ -14,7 +14,6 @@ def test_upsert_entry_writes_file(tmp_path: Path) -> None:
         entry={
             "frame": [1, 2, 3, 4],
             "screen_id": 1,
-            "screen_frame": [0, 0, 100, 100],
         },
     )
     assert wrote is True
@@ -31,7 +30,7 @@ def test_upsert_entry_skips_when_unchanged(tmp_path: Path) -> None:
     from matplotlib_window_tracker import geometry_cache
 
     p = tmp_path / "window_geometry.json"
-    entry = {"frame": [1, 2, 3, 4], "screen_id": 1, "screen_frame": [0, 0, 100, 100]}
+    entry = {"frame": [1, 2, 3, 4], "screen_id": 1}
     assert (
         geometry_cache._upsert_entry(path=p, tag="winA", machine_id="m1", entry=entry)
         is True

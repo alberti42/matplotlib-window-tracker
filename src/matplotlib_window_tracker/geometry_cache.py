@@ -301,20 +301,17 @@ def _mk_entry_from_manager(
     Requires upstream macOS manager APIs:
     - get_window_frame
     - get_window_screen_id
-    - get_screen_frame
     """
 
     try:
         frame = list(mgr.get_window_frame())
         screen_id = mgr.get_window_screen_id()
-        screen_frame = list(mgr.get_screen_frame())
     except Exception:
         return None
 
     out: dict[str, Any] = {
         "frame": frame,
         "screen_id": screen_id,
-        "screen_frame": screen_frame,
         "updated_at": _utc_now_iso(),
     }
 
@@ -590,7 +587,6 @@ def track_position_size(
         "get_window_frame",
         "set_window_frame",
         "get_window_screen_id",
-        "get_screen_frame",
         "raise_window",
         "mpl_connect",
         "mpl_disconnect",
@@ -601,7 +597,7 @@ def track_position_size(
     path = _cache_file_path(cache_dir)
     mid = _machine_id()
 
-    last_saved_fp: tuple[Any, Any, Any, Any] | None = None
+    last_saved_fp: tuple[Any, Any, Any] | None = None
     window_level_floating: bool | None = None
     if restore_from_cache:
         restored = _restore_from_cache(mgr=mgr, tag=tag, machine_id=mid, path=path)
@@ -670,7 +666,7 @@ def _load_cache(path: Path) -> dict[str, Any]:
     return _coerce_cache(data)
 
 
-def _entry_fingerprint(entry: dict[str, Any]) -> tuple[Any, Any, Any, Any]:
+def _entry_fingerprint(entry: dict[str, Any]) -> tuple[Any, Any, Any]:
     """Return a stable fingerprint used to detect meaningful changes.
 
     The fingerprint includes only fields that should trigger a disk write.
@@ -679,7 +675,6 @@ def _entry_fingerprint(entry: dict[str, Any]) -> tuple[Any, Any, Any, Any]:
     return (
         entry.get("frame"),
         entry.get("screen_id"),
-        entry.get("screen_frame"),
         entry.get("window_level_floating"),
     )
 

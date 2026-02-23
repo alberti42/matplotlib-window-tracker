@@ -8,7 +8,6 @@ class _FakeManager:
     def __init__(self) -> None:
         self._frame = [0, 0, 100, 100]
         self._screen_id = 1
-        self._screen_frame = [0, 0, 1920, 1080]
         self._next_cid = 1
         self._callbacks: dict[int, Callable[..., Any]] = {}
         self._events: dict[str, list[int]] = {}
@@ -23,9 +22,6 @@ class _FakeManager:
 
     def get_window_screen_id(self):
         return self._screen_id
-
-    def get_screen_frame(self):
-        return list(self._screen_frame)
 
     def mpl_connect(self, event: str, cb: Callable[..., Any]) -> int:
         cid = self._next_cid
@@ -90,7 +86,6 @@ def test_track_position_size_restores_and_saves(
         entry={
             "frame": [11, 22, 333, 444],
             "screen_id": 1,
-            "screen_frame": [0, 0, 1920, 1080],
             "window_level_floating": True,
         },
     )
