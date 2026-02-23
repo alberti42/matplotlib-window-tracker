@@ -423,6 +423,26 @@ python -m pytest
 2) If you are headless (no GUI): there is no window to show.
 Use `fig.savefig(...)`.
 
+### One figure freezes during multi-figure animation (Qt backends)
+
+`plt.pause()` only calls `draw_idle()` on the *active* Matplotlib figure.
+With Qt backends (`qtagg`, `qt5agg`, `qt6agg`), `draw_idle()` posts a deferred
+paint event; under a short pause interval (e.g. 0.001 s) the inactive window's
+paint event may not be flushed within that interval, particularly when focus is
+on a different window.
+
+**Fix:** call `canvas.draw()` (synchronous) on each figure explicitly before
+`plt.pause()`:
+
+```python
+fig1.canvas.draw()
+fig2.canvas.draw()
+plt.pause(0.001)
+```
+
+This forces both canvases to render every frame, regardless of which window has
+focus.
+
 ## Design Notes / Limitations
 
 - `raise_window()` is best-effort and backend/OS dependent. Some window managers and OS

@@ -175,6 +175,19 @@ for k in range(200):
     plt.pause(0.001)
 ```
 
+**Qt backends pitfall (qtagg / qt5agg / qt6agg):** `plt.pause()` only calls
+`draw_idle()` on the *active* figure. With Qt, `draw_idle()` posts a deferred
+paint event that may not be flushed within a short pause interval when the
+window does not have focus — one figure appears frozen while the other animates
+normally. Fix: call `canvas.draw()` (synchronous) on **every** figure before
+`plt.pause()`:
+
+```python
+    fig1.canvas.draw()
+    fig2.canvas.draw()
+    plt.pause(0.001)
+```
+
 ### Script that works both interactively and standalone
 
 ```python
@@ -216,6 +229,9 @@ Common fixes:
 - **IPython on macOS**: run `%matplotlib macosx` before your script.
 - **IPython on Linux**: run `%matplotlib qt` (or `%matplotlib tk`).
 - **Headless / Agg backend**: no window can open; use `fig.savefig(...)` instead.
+- **One figure frozen in multi-figure Qt animation**: `plt.pause()` only draws
+  the active figure. Call `fig1.canvas.draw(); fig2.canvas.draw()` before each
+  `plt.pause()` to guarantee both windows render every frame.
 
 For geometry persistence, ensure:
 - backend is `macosx`
