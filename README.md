@@ -261,8 +261,8 @@ responsive, use `hold_windows()`.
 
 ## Window Geometry Persistence
 
-Window geometry persistence works on **macOS, Linux, and Windows** with any backend
-that exposes the required manager APIs. It relies on upstream Matplotlib changes from
+Window geometry persistence works on **macOS, Linux, and Windows**. The `macosx` and
+`qtagg` backends are supported and tested. It relies on upstream Matplotlib changes from
 PR https://github.com/matplotlib/matplotlib/pull/31172
 (`get_window_frame`/`set_window_frame` and move/resize end events), which are provided
 by the patched fork installed via `mpl-patch-for-mwt install`.
