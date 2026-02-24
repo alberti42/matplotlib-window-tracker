@@ -211,7 +211,7 @@ def cmd_uninstall(yes: bool) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        prog="matplotlib-patch",
+        prog="mpl-patch-for-mwt",
         description=(
             "Install or uninstall the patched fork of matplotlib required"
             " by matplotlib-window-tracker."

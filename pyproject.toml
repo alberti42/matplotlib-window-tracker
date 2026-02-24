@@ -23,7 +23,7 @@ test = [
 ]
 
 [project.scripts]
-matplotlib-patch = "matplotlib_window_tracker._patch_cli:main"
+mpl-patch-for-mwt = "matplotlib_window_tracker._patch_cli:main"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
