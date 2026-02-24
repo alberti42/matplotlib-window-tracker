@@ -5,7 +5,7 @@ license: MIT
 metadata:
   author: Andrea Alberti (2026)
   package_repo: https://github.com/alberti42/matplotlib-window-tracker
-  version: 1.2.1
+  version: 1.3.0
 ---
 
 # Skill: matplotlib-window-tracker
@@ -51,9 +51,9 @@ Suggested question to ask the user (only when relevant):
 Only install if the user explicitly asks for it; the package may already be available in the environment. Ask the user whether a specific release should be pinned (recommended for reproducibility and to avoid future incompatibilities). If unsure, prefer pinning the latest known-good release.
 
 ```bash
-uv pip install "matplotlib-window-tracker @ git+https://github.com/alberti42/matplotlib-window-tracker.git@v1.2.1"
+uv pip install "matplotlib-window-tracker @ git+https://github.com/alberti42/matplotlib-window-tracker.git@v1.3.0"
 # or (if `uv` is not available)
-pip install "matplotlib-window-tracker @ git+https://github.com/alberti42/matplotlib-window-tracker.git@v1.2.1"
+pip install "matplotlib-window-tracker @ git+https://github.com/alberti42/matplotlib-window-tracker.git@v1.3.0"
 ```
 
 # Unpinned (installs current default-branch HEAD; not recommended for reproducibility)

@@ -108,7 +108,7 @@ uv pip install "matplotlib-window-tracker @ git+https://github.com/alberti42/mat
 Pin a specific version (recommended to avoid future breaking changes):
 
 ```bash
-uv pip install "matplotlib-window-tracker @ git+https://github.com/alberti42/matplotlib-window-tracker.git@v1.2.1"
+uv pip install "matplotlib-window-tracker @ git+https://github.com/alberti42/matplotlib-window-tracker.git@v1.3.0"
 ```
 
 </details>
