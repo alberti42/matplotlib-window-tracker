@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "matplotlib-window-tracker"
 version = "1.2.1"
-description = "Persist Matplotlib window geometry across runs (macOS) + terminal-run helpers"
+description = "Persist Matplotlib window geometry across runs + terminal-run helpers"
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"

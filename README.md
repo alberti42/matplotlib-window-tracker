@@ -22,7 +22,7 @@ useful in IPython when you re-run code and want to keep updating the same window
 What Matplotlib does *not* provide out of the box is persisting window geometry
 (position + size) across separate runs of a script.
 
-This package adds that missing piece on macOS (see `track_position_size(...)`).
+This package adds that missing piece on macOS, Linux, and Windows (see `track_position_size(...)`).
 
 Importantly, the geometry cache mechanism in this package is independent of Matplotlib's
 `num=...` reuse mechanics and does not rely on figure/window titles as identifiers.
@@ -51,8 +51,9 @@ On macOS, the `macosx` backend is built in and does not require extra installati
 
 ## What You Get
 
-- Window geometry persistence across runs (macOS): `track_position_size(fig, tag=...)`
+- Window geometry persistence across runs: `track_position_size(fig, tag=...)`
   restores position+size from a local cache and keeps it updated when you move/resize.
+  Works on macOS, Linux, and Windows with the patched matplotlib fork.
 - Terminal-run convenience `hold_windows()`: keep a script alive after creating
   figures while keeping the GUI responsive; exit when a key is pressed or when all
   figures are closed.
@@ -93,6 +94,8 @@ perfectly overlapped), and you would have to manually move/resize them again.
 
 ## Install
 
+### Step 1 — Install the package
+
 Using `uv` (recommended):
 
 <details>
@@ -121,7 +124,28 @@ pip install "matplotlib-window-tracker @ git+https://github.com/alberti42/matplo
 
 </details>
 
-Optional (Qt convenience; installs PySide6):
+### Step 2 — Install the patched matplotlib (required for window geometry persistence)
+
+Window geometry persistence relies on APIs not yet merged into the official matplotlib
+release (see [PR #31172](https://github.com/matplotlib/matplotlib/pull/31172)).
+A patched fork is provided as a drop-in replacement, with pre-built wheels for
+macOS, Linux, and Windows.
+
+Installing the package (Step 1) automatically registers a `mpl-patch-for-mwt` command in
+your environment (`mwt` = **m**atplotlib-**w**indow-**t**racker). Run it once to install
+the pre-built wheel for your Python version and platform:
+
+```bash
+mpl-patch-for-mwt install
+```
+
+To restore the official matplotlib at any time:
+
+```bash
+mpl-patch-for-mwt uninstall
+```
+
+### Optional — Qt backend (installs PySide6)
 
 <details>
 <summary>Show command</summary>
@@ -235,18 +259,15 @@ Use Matplotlib primitives directly:
 When running from a terminal and you want to keep the process alive while the GUI stays
 responsive, use `hold_windows()`.
 
-## Window Geometry Persistence (macOS)
+## Window Geometry Persistence
 
-Window geometry persistence currently targets the `macosx` backend and relies on
-upstream Matplotlib changes from PR https://github.com/matplotlib/matplotlib/pull/31172
-(manager APIs like `get_window_frame`/`set_window_frame` and move/resize end events).
+Window geometry persistence works on **macOS, Linux, and Windows** with any backend
+that exposes the required manager APIs. It relies on upstream Matplotlib changes from
+PR https://github.com/matplotlib/matplotlib/pull/31172
+(`get_window_frame`/`set_window_frame` and move/resize end events), which are provided
+by the patched fork installed via `mpl-patch-for-mwt install`.
 
-It is macOS-only for now because window geometry is backend-specific in Matplotlib.
-This is normal for Matplotlib: each GUI backend owns its native window and exposes
-different capabilities.
-
-The plan is to extend upstream support to the most common GUI backends (Qt/Tk/Gtk)
-and only then consider any cross-backend abstraction.
+The function is a silent no-op on backends that do not expose these APIs.
 
 Usage:
 
@@ -364,7 +385,7 @@ Import name is `matplotlib_window_tracker`:
     - Best-effort: bring a native figure window to the foreground (backend-dependent).
 
   - `track_position_size(fig, *, tag, restore_from_cache=True, cache_dir=None) -> WindowTracker | None`
-    - macOS: restore and track a figure window's position+size.
+    - Restore and track a figure window's position+size (macOS, Linux, Windows).
     - Uses `tag` as an explicit cache key (no fallback keys).
     - Restores once from `.matplotlib-window-tracker/window_geometry.json` and saves on
       `window_move_end_event` / `window_resize_end_event`.
