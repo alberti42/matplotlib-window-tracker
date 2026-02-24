@@ -33,7 +33,7 @@ def main(argv: list[str] | None = None) -> int:
 
     # macOS-only feature demo: use the native macosx backend when possible.
     if sys.platform == "darwin":
-        matplotlib.use("qtagg")
+        matplotlib.use("macosx")
 
     matplotlib.rcParams["figure.raise_window"] = False
 
