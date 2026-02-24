@@ -157,7 +157,7 @@ def cmd_install(yes: bool) -> None:
 
     print()
     subprocess.run(
-        [sys.executable, "-m", "pip", "install", "--force-reinstall", url],
+        [sys.executable, "-m", "pip", "install", "--force-reinstall", "--no-deps", url],
         check=True,
     )
     print()
@@ -178,7 +178,7 @@ def cmd_uninstall(yes: bool) -> None:
         )
         print()
         print("Nothing was changed. To reinstall the official version manually, run:")
-        print(f"  {sys.executable} -m pip install --force-reinstall matplotlib")
+        print(f"  {sys.executable} -m pip install --force-reinstall --no-deps matplotlib")
         return
 
     print()
@@ -198,7 +198,7 @@ def cmd_uninstall(yes: bool) -> None:
 
     print()
     subprocess.run(
-        [sys.executable, "-m", "pip", "install", "--force-reinstall", "matplotlib"],
+        [sys.executable, "-m", "pip", "install", "--force-reinstall", "--no-deps", "matplotlib"],
         check=True,
     )
     print()
