@@ -22,6 +22,9 @@ test = [
   "pytest>=7",
 ]
 
+[project.scripts]
+matplotlib-patch = "matplotlib_window_tracker._patch_cli:main"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
